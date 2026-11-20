@@ -1,0 +1,106 @@
+/* Files (FR-CNT-006/008, task 12c). */
+.files {
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-1);
+  border: 1px dashed transparent;
+  border-radius: 8px;
+}
+.files[data-over] {
+  border-color: var(--accent);
+  background: var(--tag-muted-bg);
+}
+.files-list {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.file-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  min-height: 30px;
+}
+.file-row[data-error] {
+  color: var(--tag-danger-fg);
+}
+.file-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.file-tools {
+  display: inline-flex;
+  gap: 2px;
+}
+.file-delete {
+  color: var(--tag-danger-fg);
+  font-weight: 600;
+}
+.files-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 0.75rem;
+}
+.file-preview {
+  width: min(900px, calc(100vw - 32px));
+  height: min(80vh, 900px);
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--tile-radius);
+  background: var(--card-bg);
+  color: var(--ink);
+}
+.file-preview[open] {
+  display: grid;
+  grid-template-rows: auto 1fr;
+}
+.file-preview::backdrop {
+  background: rgb(20 24 36 / 0.4);
+}
+.fp-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--line);
+  font-weight: 600;
+}
+.fp-body {
+  display: grid;
+  place-items: center;
+  min-height: 0;
+  overflow: auto;
+  background: var(--tag-muted-bg);
+}
+.fp-body img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  image-rendering: auto;
+}
+.fp-body iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+.files .icon-button,
+.file-preview .icon-button,
+.attachments .icon-button {
+  width: 28px;
+  height: 28px;
+  color: var(--ink-muted);
+}
+.files .icon-button:hover:not(:disabled),
+.file-preview .icon-button:hover:not(:disabled),
+.attachments .icon-button:hover:not(:disabled) {
+  background: var(--tag-muted-bg);
+  color: var(--ink);
+}

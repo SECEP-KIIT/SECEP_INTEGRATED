@@ -1,0 +1,18 @@
+Message-ID: <11@secep.example>
+In-Reply-To: <01@secep.example>
+References: <01@secep.example>
+From: Bob <bob@corp.example>
+To: alice@corp.example
+Subject: Re: Weekly standup notes
+Date: Wed, 04 Nov 2026 14:15:00 +0000
+Content-Type: text/plain; charset=utf-8
+
+Looks good, I will merge the PR today.
+
+-- 
+Bob Smith
+Senior Engineer
+
+On Wed, Nov 4, 2026 at 9:12 AM Alice <alice@corp.example> wrote:
+> Hi Bob,
+> Please review before 3pm.

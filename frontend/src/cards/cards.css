@@ -1,0 +1,289 @@
+/* User cards (FR-CNT-001/002, task 12): quick-add and the card sheet. */
+.quick-add {
+  width: min(600px, calc(100vw - 32px));
+  margin-top: 14vh;
+  padding: var(--space-3);
+  border: 1px solid var(--line);
+  border-radius: var(--tile-radius);
+  background: var(--card-bg);
+  color: var(--ink);
+  font-size: 0.875rem;
+}
+.quick-add::backdrop,
+.card-sheet::backdrop {
+  background: rgb(20 24 36 / 0.18);
+}
+.quick-add form {
+  display: grid;
+  gap: var(--space-2);
+}
+.qa-input {
+  box-sizing: border-box;
+  width: 100%;
+  padding: var(--space-2);
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: var(--card-bg);
+  color: var(--ink);
+  font: inherit;
+  font-size: 1rem;
+}
+.qa-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-height: 22px;
+}
+.qa-chip {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--tag-muted-bg, rgb(0 0 0 / 0.06));
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.qa-chip[data-kind='urgency'] {
+  background: var(--tag-warn-bg);
+  color: var(--tag-warn-fg);
+}
+.qa-chip[data-kind='date'],
+.qa-chip[data-kind='time'] {
+  background: var(--tag-ok-bg);
+  color: var(--tag-ok-fg);
+}
+.qa-chip[data-miss] {
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+.qa-hint {
+  color: var(--ink-muted);
+  font-size: 0.75rem;
+}
+.qa-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+.qa-sources {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+.qa-source {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink-muted);
+  font: inherit;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+.qa-source[aria-checked='true'] {
+  border-color: var(--accent);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* The card sheet: a panel on the right, like the email drawer. */
+.card-sheet {
+  box-sizing: border-box;
+  width: min(440px, 100vw);
+  height: 100dvh;
+  max-height: none;
+  margin: 0 0 0 auto;
+  padding: 0;
+  border: 0;
+  border-left: 1px solid var(--line);
+  background: var(--card-bg);
+  color: var(--ink);
+  font-size: 0.875rem;
+}
+.cs {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4) var(--space-4);
+}
+.cs-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.cs-kind {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--ink-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.cs-status {
+  margin-left: auto;
+  color: var(--ink-muted);
+  font-size: 0.75rem;
+}
+.cs-title {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 4px 6px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+.cs-title:hover,
+.cs-title:focus {
+  border-color: var(--line-strong);
+}
+.cs-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: var(--space-2);
+}
+.cs .pd-field select {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 32px;
+  border: 1px solid var(--line-strong);
+  border-radius: 6px;
+  background: var(--card-bg);
+  color: var(--ink);
+  font: inherit;
+}
+.cs-label {
+  color: var(--ink-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.cs-section h3 {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 var(--space-1);
+  font-size: 0.8125rem;
+}
+.cs-checklist {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.cs-checklist li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 28px;
+}
+.cs-checklist li span {
+  flex: 1;
+}
+.cs-checklist [data-done] {
+  color: var(--ink-muted);
+  text-decoration: line-through;
+}
+.cs-add {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--ink-muted);
+}
+.cs-add input {
+  flex: 1;
+  min-height: 28px;
+  border: 0;
+  border-bottom: 1px dashed var(--line-strong);
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+}
+.cs-projects {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.cs-project {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+.cs-project[aria-pressed='true'] {
+  border-color: var(--accent);
+  background: var(--accent-soft, rgb(0 0 0 / 0.04));
+  font-weight: 600;
+}
+.cs-project[aria-pressed='true']::after {
+  content: '✓';
+}
+.cs-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+.cs-foot {
+  display: flex;
+  justify-content: flex-end;
+}
+/* Icon buttons here sit on the card surface, not the frosted bars. */
+.card-sheet .icon-button {
+  width: 28px;
+  height: 28px;
+  color: var(--ink-muted);
+}
+.card-sheet .icon-button:hover:not(:disabled) {
+  background: var(--tag-muted-bg);
+  color: var(--ink);
+}
+
+/* Send to (proposals §27.2): Jira, Calendar, Remind me, and what was already sent. */
+.card-send {
+  display: grid;
+  gap: var(--space-2);
+}
+.card-send-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.card-sends {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.875rem;
+}
+.card-sends li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+.card-send-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.card-send-state {
+  flex: none;
+  color: var(--ink-muted);
+  font-size: 0.8125rem;
+}
+.card-sends li[data-status='failed'] .card-send-state {
+  color: var(--danger, #c4271b);
+}

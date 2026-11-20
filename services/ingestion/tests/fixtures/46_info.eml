@@ -1,0 +1,8 @@
+Message-ID: <46@secep.example>
+From: sender46@corp.example
+To: bob@corp.example
+Subject: [Info] Incident postmortem #19
+Date: Wed, 04 Nov 2026 16:24:00 +0000
+Content-Type: text/plain; charset=utf-8
+
+Root cause: expired OAuth token in testing mode.

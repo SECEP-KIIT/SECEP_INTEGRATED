@@ -1,0 +1,132 @@
+%%{init: {'theme':'base','themeVariables':{'fontFamily':'Helvetica, Arial, sans-serif','fontSize':'14px','actorBkg':'#ffffff','actorBorder':'#1c2530','actorTextColor':'#1c2530','actorLineColor':'#9aa6ad','signalColor':'#1c2530','signalTextColor':'#1c2530','labelBoxBkgColor':'#dceef3','labelBoxBorderColor':'#1d6a80','labelTextColor':'#1c2530','loopTextColor':'#1d6a80','noteBkgColor':'#fff8dc','noteBorderColor':'#c9b458','noteTextColor':'#1c2530','activationBkgColor':'#dceef3','activationBorderColor':'#1d6a80'},'sequence':{'mirrorActors':true,'showSequenceNumbers':true,'actorMargin':40,'messageMargin':32,'wrap':false}}}%%
+%% SECEP — sequence diagram: one incoming email, from Gmail to an accepted Jira issue
+%% Source: SRS v1.0, sections 2.1, 3, 6.3–6.5. Requirement IDs are in square brackets.
+
+sequenceDiagram
+  autonumber
+
+  actor U as User (Dashboard · M8)
+  box rgb(236,244,246) SECEP services
+    participant API as API & Orchestrator (M6)
+    participant ING as Ingestion (M2)
+    participant TRI as Triage encoder (M3)
+    participant SEC as Security (M5)
+    participant DEC as Decoder (M4)
+  end
+  box rgb(243,244,242) Data layer · M7
+    participant PG as PostgreSQL
+    participant RS as Redis Streams
+  end
+  box rgb(250,246,233) External
+    participant GM as Gmail API
+    participant LLM as LLM endpoint
+    participant JR as Jira Cloud
+  end
+
+  %% ---------- Ingestion ----------
+  loop every POLL_INTERVAL_S (30 s) [FR-ING-001]
+    ING->>GM: users.history.list(startHistoryId)
+    alt historyId rejected (HTTP 404) [FR-ING-002]
+      GM-->>ING: 404
+      ING->>GM: users.messages.list(newer_than:7d)
+    end
+    GM-->>ING: new message ids
+    ING->>GM: users.messages.get(format=raw)
+    Note over ING,GM: 429 / 5xx → exponential backoff, ≤ 5 tries [FR-ING-013]
+    GM-->>ING: raw MIME message
+  end
+
+  activate ING
+  ING->>ING: parse MIME, decode, sanitize HTML, extract links [FR-ING-003–007]
+  ING->>ING: strip quotes & signature, mask credentials [FR-ING-008–009]
+  alt parse error or > 50 MB [FR-ING-012]
+    ING->>RS: XADD emails.dlq {stage: parse_error}
+  else Message-ID already stored [FR-ING-011]
+    ING->>ING: discard silently
+  else new, parsed message
+    ING->>PG: INSERT email, thread, masked_secrets (AES-256-GCM)
+    ING->>RS: XADD emails.ingested (envelope.v1) [FR-ING-014]
+    ING->>PG: UPDATE mailboxes.history_id
+  end
+  deactivate ING
+
+  %% ---------- Fast path and link checks in parallel ----------
+  par Triage — synchronous fast path, ≤ 800 ms p95 [NFR-PERF-001]
+    RS->>TRI: XREADGROUP emails.ingested (group triage)
+    activate TRI
+    TRI->>PG: read email, recipient role, sender
+    TRI->>TRI: embed (768-d), role features, heads + λ·role prior, calibrate [FR-TRI-001–008]
+    TRI->>TRI: validate triage.v1 [FR-TRI-009]
+    TRI->>PG: INSERT email_embeddings, triage_results
+    TRI->>RS: XADD emails.triaged · XACK
+    deactivate TRI
+    RS->>API: emails.triaged (group api)
+    API->>PG: read triage result
+    API-)U: WS email.triaged {labels} [FR-TRI-010]
+  and Link risk check — asynchronous
+    RS->>SEC: XREADGROUP emails.ingested (group security)
+    activate SEC
+    SEC->>SEC: 7 signals per URL: Safe Browsing, RDAP age, mismatch, lookalike, shortener, IP host, auth fail [FR-SEC-001]
+    SEC->>PG: INSERT url_checks {signals, verdict} [FR-SEC-002]
+    opt any URL Suspicious or Malicious [FR-SEC-003]
+      SEC->>PG: UPDATE emails.security_flag
+      SEC->>RS: XADD security.flagged
+      RS->>API: security.flagged
+      API-)U: WS email.flagged {verdict}
+    end
+    deactivate SEC
+  end
+
+  %% ---------- Enrichment ----------
+  RS->>DEC: XREADGROUP emails.triaged (group decoder)
+  activate DEC
+  DEC->>PG: read masked body, triage, recipient role
+  opt needs_review = true (type confidence < 0.60) [FR-DEC-006]
+    DEC->>LLM: adjudicate: choose one of five types
+    LLM-->>DEC: type
+    DEC->>PG: UPDATE triage_results (source = llm)
+  end
+  DEC->>LLM: POST /api/chat, format = enrich.v1, email wrapped as untrusted data [FR-DEC-001–004]
+  alt schema-valid response [FR-DEC-005]
+    LLM-->>DEC: enrich.v1 {summaries, ≤ 3 actions}
+    DEC->>DEC: drop non-allowlisted action types [FR-DEC-003]
+    DEC->>PG: INSERT summaries, actions (status = proposed)
+    DEC->>RS: XADD emails.enriched · XACK
+    RS->>API: emails.enriched
+    API-)U: WS email.enriched {summaries, actions} [FR-ORC-001]
+  else unreachable after 3 tries, or invalid twice [FR-DEC-002, 007]
+    DEC->>PG: UPDATE status = enrich_pending / enrich_failed
+    API-)U: card shows "summary unavailable"
+  end
+  deactivate DEC
+
+  %% ---------- User accepts the proposal ----------
+  U->>API: POST /api/v1/actions/{id}/accept (optional edits)
+  activate API
+  API->>API: check JWT, owner, allowlist, enrich.v1 per-type rules [FR-ORC-002]
+  alt invalid action
+    API-->>U: 422 Unprocessable Entity
+  else create_jira_issue
+    API->>PG: read actions.external_ref
+    alt Jira key already stored [FR-ORC-005]
+      API-->>U: 200 existing key
+    else no key yet
+      API->>JR: POST /rest/api/3/issue (ADF description, mapped priority, due date) [FR-ORC-003–004]
+      alt 201 Created
+        JR-->>API: issue key
+        API->>PG: UPDATE action done + key, card in To do, audit entry [FR-ORC-007, FR-ADM-006]
+        API-->>U: 200 updated action
+        API-)U: WS action.updated
+      else 400 / 401
+        JR-->>API: error body
+        API->>PG: UPDATE action failed + error
+        API-->>U: Jira's error message [FR-ORC-006]
+      else 429 / 5xx
+        Note over API,JR: retry with backoff, honour Retry-After
+      end
+    end
+  else add_board_card
+    API->>PG: INSERT card in To do, audit entry
+    API-->>U: 200 updated action
+  end
+  deactivate API

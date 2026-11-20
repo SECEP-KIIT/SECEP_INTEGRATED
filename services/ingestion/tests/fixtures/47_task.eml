@@ -1,0 +1,8 @@
+Message-ID: <47@secep.example>
+From: sender47@corp.example
+To: bob@corp.example
+Subject: [Task] Add healthcheck to compose
+Date: Wed, 04 Nov 2026 16:25:00 +0000
+Content-Type: text/plain; charset=utf-8
+
+Check port 8004 /health.

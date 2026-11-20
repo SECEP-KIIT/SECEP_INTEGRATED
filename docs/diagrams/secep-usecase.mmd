@@ -1,0 +1,141 @@
+%%{init: {'theme':'base','themeVariables':{'fontFamily':'Helvetica, Arial, sans-serif','fontSize':'13px','lineColor':'#1c2530','edgeLabelBackground':'#ffffff','primaryTextColor':'#1c2530'},'flowchart':{'curve':'basis','nodeSpacing':28,'rankSpacing':70}}}%%
+%% SECEP — UML use case diagram (Mermaid approximation)
+%% Source: SRS v1.0, sections 1.3, 3, 4.3. Mermaid has no use case diagram type, so:
+%%   actors     = boxes marked «actor»          use cases = stadium (pill) shapes
+%%   system     = the SECEP subgraph            «include» / «extend» = dashed labelled arrows
+%%   "is a"     = actor generalization (UML hollow triangle not available in Mermaid)
+%%   dashed pill outline = Should priority (built if time allows)
+%% Tested with Mermaid 11.6. Mermaid 11.4 draws arrowheads on plain --- links (a renderer bug).
+
+flowchart LR
+
+  %% ---------------- primary actors ----------------
+  User["«actor»<br/><b>User</b><br/><small>employee with a mailbox</small>"]
+  Admin["«actor»<br/><b>Tenant Admin</b>"]
+  SecRev["«actor»<br/><b>Security reviewer</b><br/><small>security.review</small>"]
+  Timer["«actor»<br/><b>Poll timer</b><br/><small>every 30 s</small>"]
+  Gmail["«actor»<br/><b>Gmail API</b><br/><small>secondary</small>"]
+
+  Admin -- "is a" --> User
+  SecRev -- "is a" --> User
+
+  subgraph SECEP["SECEP system"]
+    direction LR
+
+    subgraph EU["Every user"]
+      direction TB
+      u1(["Sign in with Google<br/><small>NFR-SEC-003</small>"])
+      u2(["Connect or disconnect mailbox<br/><small>FR-ADM-007</small>"])
+      u3(["Browse classified inbox<br/><small>FR-ORC-008</small>"])
+      u4(["Read summary and full email<br/><small>FR-DEC-008</small>"])
+      u5(["Act on a proposed action<br/><small>FR-ORC-001 – 002</small>"])
+      u6(["Manage task board<br/><small>FR-ORC-007</small>"])
+      u7(["Correct a label<br/><small>FR-ML-010</small>"])
+      u8(["Reveal masked credential<br/><small>FR-SEC-008</small>"])
+      u9(["Open link through safety check<br/><small>FR-SEC-004</small>"])
+    end
+
+    subgraph TA["Tenant admin"]
+      direction TB
+      a1(["Configure integrations<br/><small>FR-ADM-002</small>"])
+      a2(["Manage users and permissions<br/><small>FR-ADM-004</small>"])
+      a3(["Retrain and promote model<br/><small>FR-ML-011 – 012</small>"])
+      a4(["View metrics and drift<br/><small>§5.4</small>"])
+    end
+
+    subgraph SR["Security review"]
+      direction TB
+      s1(["Review flagged links and alerts<br/><small>FR-SEC-003 · 010</small>"])
+      s2(["Read audit log<br/><small>NFR-SEC-006</small>"])
+    end
+
+    subgraph AP["Automatic pipeline"]
+      direction TB
+      p1(["Ingest new mail<br/><small>FR-ING-001 – 014</small>"])
+    end
+
+    %% included / extending use cases
+    i5a(["Validate action payload"])
+    x5b(["Create Jira issue"])
+    x5c(["Add calendar event"])
+    i8(["Re-authenticate (≤ 5 min)"])
+    i9(["Resolve redirect chain"])
+    x10(["Test connection"])
+    i12(["Evaluate candidate model"])
+    ip1(["Mask credentials"])
+    ip2(["Classify email"])
+    ip3(["Score links"])
+    ip4(["Summarize and propose actions"])
+  end
+
+  %% ---------------- secondary actors ----------------
+  Google["«actor»<br/><b>Google Identity</b><br/><small>OAuth 2.0 / OIDC</small>"]
+  Jira["«actor»<br/><b>Jira Cloud</b><br/><small>REST API v3</small>"]
+  Cal["«actor»<br/><b>Google Calendar</b><br/><small>secondary · [S]</small>"]
+  SB["«actor»<br/><b>Safe Browsing</b><br/><small>and RDAP</small>"]
+  LLM["«actor»<br/><b>LLM endpoint</b><br/><small>Ollama / vLLM / API</small>"]
+
+  %% ---------------- associations ----------------
+  User --- u1
+  User --- u2
+  User --- u3
+  User --- u4
+  User --- u5
+  User --- u6
+  User --- u7
+  User --- u8
+  User --- u9
+  Admin --- a1
+  Admin --- a2
+  Admin --- a3
+  Admin --- a4
+  SecRev --- s1
+  SecRev --- s2
+  Timer --- p1
+  Gmail --- p1
+
+  %% ---------------- include / extend ----------------
+  %% invisible links keep extending use cases to the right of their base
+  u5 ~~~ x5b
+  u5 ~~~ x5c
+  a1 ~~~ x10
+  u5 -. "«include»" .-> i5a
+  x5b -. "«extend»" .-> u5
+  x5c -. "«extend»" .-> u5
+  u8 -. "«include»" .-> i8
+  u9 -. "«include»" .-> i9
+  x10 -. "«extend»" .-> a1
+  a3 -. "«include»" .-> i12
+  p1 -. "«include»" .-> ip1
+  p1 -. "«include»" .-> ip2
+  p1 -. "«include»" .-> ip3
+  p1 -. "«include»" .-> ip4
+
+  %% ---------------- secondary associations ----------------
+  u1 --- Google
+  u2 --- Google
+  i8 --- Google
+  x5b --- Jira
+  x10 --- Jira
+  x5c --- Cal
+  i9 --- SB
+  ip3 --- SB
+  x10 --- LLM
+  ip4 --- LLM
+
+  %% ---------------- styling ----------------
+  classDef actor fill:#ffffff,stroke:#1c2530,stroke-width:1.6px,color:#1c2530
+  classDef uc fill:#ffffff,stroke:#1c2530,stroke-width:1.3px,color:#1c2530
+  classDef inc fill:#dceef3,stroke:#1d6a80,stroke-width:1.3px,color:#1c2530
+  classDef should fill:#dceef3,stroke:#1d6a80,stroke-width:1.3px,stroke-dasharray:5 3,color:#1c2530
+
+  class User,Admin,SecRev,Timer,Gmail,Google,Jira,Cal,SB,LLM actor
+  class u1,u2,u3,u4,u5,u6,u7,u8,u9,a1,a2,a3,a4,s1,s2,p1 uc
+  class i5a,x5b,i8,i9,x10,i12,ip1,ip2,ip3,ip4 inc
+  class x5c should
+
+  style SECEP fill:#f3f5f3,stroke:#1c2530,stroke-width:1.4px
+  style EU fill:#f3f5f3,stroke:#c9d1cc,stroke-dasharray:2 4
+  style TA fill:#f3f5f3,stroke:#c9d1cc,stroke-dasharray:2 4
+  style SR fill:#f3f5f3,stroke:#c9d1cc,stroke-dasharray:2 4
+  style AP fill:#f3f5f3,stroke:#c9d1cc,stroke-dasharray:2 4

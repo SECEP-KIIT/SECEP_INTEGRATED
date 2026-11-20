@@ -1,0 +1,196 @@
+.settings.admin {
+  max-width: 980px;
+}
+.admin-forms {
+  display: grid;
+  gap: var(--space-4);
+}
+.admin-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+.admin-head h2 {
+  margin: 0;
+}
+.admin-sub {
+  margin: var(--space-2) 0 0;
+  color: var(--ink-muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.admin-grid {
+  display: grid;
+  align-items: start;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--space-3);
+}
+.admin-foot {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-3);
+}
+.admin-test {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  border-radius: 6px;
+  background: var(--col-bg);
+  list-style: none;
+  font-size: 0.875rem;
+}
+.admin-test li {
+  color: var(--danger, #c4271b);
+}
+.admin-test li[data-ok] {
+  color: #2f9e44;
+}
+.admin-table-wrap {
+  overflow-x: auto;
+}
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+  font-variant-numeric: tabular-nums;
+}
+.admin-table th,
+.admin-table td {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: middle;
+}
+.admin-table thead th {
+  color: var(--ink-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.admin-table tbody th {
+  font-weight: 400;
+}
+.admin-table tbody th > .admin-user,
+.admin-table tbody th > .settings-hint,
+.admin-table tbody th > .admin-status {
+  display: block;
+}
+.admin-table select {
+  min-height: 28px;
+  padding: 2px 6px;
+  border: 1px solid var(--line-strong);
+  border-radius: 6px;
+  background: var(--card-bg);
+  color: var(--ink);
+  font: inherit;
+}
+.admin-table input[type='checkbox'],
+.admin-check input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent);
+}
+.admin-user {
+  font-weight: 600;
+}
+.admin-badge {
+  display: inline-block;
+  margin-top: 2px;
+  padding: 0 6px;
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  color: var(--accent);
+  font-size: 0.6875rem;
+  font-weight: 600;
+}
+.admin-status {
+  color: var(--ink-muted);
+  font-size: 0.75rem;
+}
+.admin-status[data-status='promoted'] {
+  color: #2f9e44;
+  font-weight: 600;
+}
+.admin-status[data-status='candidate'] {
+  color: #e8890c;
+  font-weight: 600;
+}
+.admin-models tr[data-status='retired'] td {
+  color: var(--ink-muted);
+}
+.admin-delta {
+  margin-left: 6px;
+  color: var(--ink-muted);
+  font-size: 0.75rem;
+}
+.admin-delta[data-dir='up'] {
+  color: #2f9e44;
+}
+.admin-delta[data-dir='down'] {
+  color: var(--danger, #c4271b);
+}
+.admin-add {
+  display: grid;
+  grid-template-columns: minmax(200px, 2fr) minmax(140px, 1fr) auto auto;
+  align-items: end;
+  gap: var(--space-3);
+}
+.admin-check {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  font-size: 0.875rem;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.admin-gates {
+  padding: var(--space-2) var(--space-3);
+  border-left: 3px solid var(--danger, #c4271b);
+  border-radius: 6px;
+  background: var(--col-bg);
+  font-size: 0.875rem;
+}
+.admin-gates p {
+  margin: 0;
+  font-weight: 600;
+}
+.admin-gates ul {
+  margin: 4px 0 0;
+  padding-left: 1.2em;
+}
+@media (max-width: 640px) {
+  .admin-add {
+    grid-template-columns: 1fr;
+  }
+}
+/* Form fields (the drawer's composer styles may not be loaded on this route). */
+.admin .composer-field {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.admin .composer-field label {
+  color: var(--ink-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.admin .composer-field input,
+.admin .composer-field select {
+  min-height: 32px;
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--line-strong);
+  border-radius: 6px;
+  background: var(--card-bg);
+  color: var(--ink);
+  font: inherit;
+}
+.admin .composer-error {
+  color: var(--danger, #c4271b);
+  font-size: 0.75rem;
+}

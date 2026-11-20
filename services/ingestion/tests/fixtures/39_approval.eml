@@ -1,0 +1,8 @@
+Message-ID: <39@secep.example>
+From: sender39@corp.example
+To: bob@corp.example
+Subject: [Approval] Access request: Grafana
+Date: Wed, 04 Nov 2026 16:17:00 +0000
+Content-Type: text/plain; charset=utf-8
+
+Grant viewer role to analyst@corp.example.

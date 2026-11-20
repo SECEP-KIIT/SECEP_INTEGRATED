@@ -1,0 +1,8 @@
+Message-ID: <49@secep.example>
+From: sender49@corp.example
+To: bob@corp.example
+Subject: [Info] Library update
+Date: Wed, 04 Nov 2026 16:27:00 +0000
+Content-Type: text/plain; charset=utf-8
+
+cryptography 43.0.3 released.

@@ -1,0 +1,22 @@
+Message-ID: <19@secep.example>
+From: pm@corp.example
+To: bob@corp.example
+Subject: Sprint Review
+Date: Wed, 04 Nov 2026 15:10:00 +0000
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="cal19"
+
+--cal19
+Content-Type: text/plain; charset=utf-8
+
+Join us for the Sprint Review.
+--cal19
+Content-Type: text/calendar; method=REQUEST; charset=utf-8
+
+BEGIN:VCALENDAR
+VERSION:2.0
+BEGIN:VEVENT
+SUMMARY:Sprint Review
+END:VEVENT
+END:VCALENDAR
+--cal19--

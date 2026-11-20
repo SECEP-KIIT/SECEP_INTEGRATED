@@ -1,0 +1,8 @@
+Message-ID: <41@secep.example>
+From: sender41@corp.example
+To: bob@corp.example
+Subject: [Task] Clean up old Docker images
+Date: Wed, 04 Nov 2026 16:19:00 +0000
+Content-Type: text/plain; charset=utf-8
+
+Registry usage reached 75%.

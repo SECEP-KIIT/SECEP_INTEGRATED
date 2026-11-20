@@ -1,0 +1,8 @@
+Message-ID: <37@secep.example>
+From: sender37@corp.example
+To: bob@corp.example
+Subject: [Info] Postgres 16 upgrade complete
+Date: Wed, 04 Nov 2026 16:15:00 +0000
+Content-Type: text/plain; charset=utf-8
+
+pgvector 0.7 and pg_trgm verified.

@@ -1,0 +1,310 @@
+/*
+ * Static lock screen + wallpaper (FR-WP-001–003, 008). Loaded by index.html before any JS, so it paints first.
+ * Keep it small (~5 KB budget with boot.ts). Only transform and opacity animate; the loading ring's SVG stroke is the
+ * one exception, as with the Jira check in frontend-decisions item 9.
+ */
+:root {
+  --lock-ink: #1e2230;
+  --lock-ink-soft: rgb(30 34 48 / 0.84); /* ≥ 5.3:1 on every light phase (AA) */
+  --lock-card: rgb(255 255 255 / 0.55);
+  --enter: 250ms;
+  --fade: 180ms;
+  --rise: 24px;
+  --settle: 1.04;
+  --lock-ok: #237a37; /* done tick */
+}
+html[data-tone='dark'] {
+  --lock-ink: #f6f7fb;
+  --lock-ink-soft: rgb(246 247 251 / 0.84); /* ≥ 4.8:1 on every dark phase */
+  --lock-card: rgb(20 24 38 / 0.5);
+  --lock-ok: #8ce99a;
+}
+/* Most reduction wins (lock-state.ts effectiveMotion); before JS runs, follow the OS unless the mirror says Full. */
+html[data-motion='reduced'] {
+  --enter: 100ms;
+  --rise: 0px;
+  --settle: 1;
+}
+html[data-motion='off'] {
+  --enter: 0ms;
+  --fade: 0ms;
+  --rise: 0px;
+  --settle: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+  html:not([data-motion]) {
+    --enter: 100ms;
+    --rise: 0px;
+    --settle: 1;
+  }
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+body {
+  overflow: hidden;
+  font: 100%/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Wallpaper: two layers cross-fade on opacity (60 s); the dim layer darkens it ~20 % inside the app. */
+.wallpaper {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  transform: scale(var(--settle));
+  transition: transform var(--enter) ease-out;
+}
+html[data-lock='open'] .wallpaper {
+  transform: none;
+}
+.wp-back,
+.wp-front,
+.wp-dim {
+  position: absolute;
+  inset: 0;
+}
+.wp-front {
+  opacity: 0;
+}
+.wp-front.is-in {
+  opacity: 1;
+  transition: opacity 60s linear;
+}
+.wp-dim {
+  background: #000;
+  opacity: 0;
+  transition: opacity var(--enter) ease-out;
+}
+html[data-lock='open'] .wp-dim {
+  opacity: 0.2;
+}
+/* No phase until boot.ts runs: a neutral mid-tone. */
+.wp-back,
+[data-phase] {
+  background: linear-gradient(160deg, #b9c3dc, #8d99bd 55%, #5f6d96);
+}
+[data-phase='dawn'] {
+  background: radial-gradient(120% 80% at 70% 100%, #ffd7b8 0%, transparent 60%),
+    linear-gradient(170deg, #9fb0dd, #c9b6e4 55%, #f3cdbd);
+}
+[data-phase='day'] {
+  background: radial-gradient(90% 70% at 80% 10%, #ffffff 0%, transparent 55%),
+    linear-gradient(170deg, #8fbcef, #b9d8f7 55%, #e3eefb);
+}
+[data-phase='golden'] {
+  background: radial-gradient(100% 70% at 25% 95%, #ffe0a8 0%, transparent 60%),
+    linear-gradient(170deg, #f0a37c, #f6c48d 55%, #fde3b6);
+}
+[data-phase='dusk'] {
+  background: radial-gradient(110% 60% at 50% 105%, #8c4766 0%, transparent 60%),
+    linear-gradient(170deg, #1f2550, #34396e 55%, #55467f);
+}
+[data-phase='night'] {
+  background: radial-gradient(70% 50% at 80% 15%, #2a3766 0%, transparent 60%),
+    linear-gradient(170deg, #0a0f22, #121a33 55%, #1b2440);
+}
+
+/* Lock */
+.lock {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: grid;
+  place-items: start center;
+  padding-top: 14vh;
+  color: var(--lock-ink);
+  outline: none;
+  cursor: default;
+  transition: opacity var(--enter) ease-out, visibility 0s;
+}
+html[data-lock='open'] .lock {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--enter) ease-in, visibility 0s var(--enter);
+}
+.lock-center {
+  display: grid;
+  justify-items: center;
+  gap: 0.25rem;
+  text-align: center;
+}
+.lock-time {
+  min-height: 1.1em;
+  font-size: clamp(4.5rem, 11vw, 7.5rem);
+  line-height: 1.1;
+  font-weight: 250;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+.lock-date {
+  min-height: 1.5em;
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 500;
+}
+/* Reserved for the weather chip (FR-WP-009, task 16), so adding it shifts nothing. */
+.lock-weather:empty {
+  display: none;
+}
+.lock-glance {
+  min-height: 1.5em;
+  margin: 0.75rem 0 0;
+  color: var(--lock-ink-soft);
+  font-size: 0.9375rem;
+}
+.lock-glance > *,
+.lock-notes > * {
+  animation: lock-in var(--fade) ease-out both;
+}
+.lock-notes {
+  display: grid;
+  gap: 0.5rem;
+  width: min(360px, 86vw);
+  margin: 1.5rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+@keyframes lock-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* Loading box at the right middle (FR-WP-003): only once the user has asked to enter. */
+.lock-loading {
+  position: absolute;
+  top: 50%;
+  right: 48px;
+  display: grid;
+  place-items: center;
+  width: 132px;
+  height: 44px;
+  margin-top: -22px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  opacity: 0;
+  transition: opacity var(--fade) ease-out;
+}
+/* Phone (proposals §16.5): bottom centre, above the safe area, clear of the notifications. Desktop keeps the right
+   middle (FR-WP-003). */
+html[data-device='phone'] .lock-loading {
+  top: auto;
+  right: auto;
+  bottom: calc(32px + env(safe-area-inset-bottom));
+  left: 50%;
+  margin: 0 0 0 -66px;
+}
+html[data-lock='waiting'] .lock-loading {
+  opacity: 0.6;
+}
+/* Done (lock-state DONE_HOLD_MS): the ring closes in green and a tick replaces the label, then the sheet rises. */
+html[data-lock='done'] .lock-loading {
+  opacity: 1;
+  color: var(--lock-ok);
+}
+.lock-loading .lock-tick {
+  inset: 12px auto auto 56px; /* centred in the 132 × 44 box */
+  opacity: 0;
+}
+.lock-tick path {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.25;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+}
+html[data-lock='done'] .lock-loading-label {
+  opacity: 0;
+}
+html[data-lock='done'] .lock-loading .lock-tick {
+  opacity: 1;
+}
+html[data-lock='done'] .lock-tick path {
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 180ms ease-out;
+}
+html[data-motion='reduced'] .lock-tick path,
+html[data-motion='off'] .lock-tick path {
+  transition: none;
+}
+.lock-loading svg {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+}
+.lock-loading rect {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+}
+.ring-track {
+  opacity: 0.2;
+}
+.ring-seg {
+  stroke-linecap: round;
+  stroke-dasharray: 8 92;
+  animation: ring-travel 1.4s linear infinite;
+}
+html[data-ready] .ring-seg,
+html[data-motion='reduced'] .ring-seg,
+html[data-motion='off'] .ring-seg {
+  animation: none;
+}
+@keyframes ring-travel {
+  to {
+    stroke-dashoffset: -100;
+  }
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Refresh (top right): only once the app has loaded and the lock is up, since React runs it. */
+.lock-refresh {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  display: none;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid rgb(255 255 255 / 0.25);
+  border-radius: 50%;
+  background: rgb(255 255 255 / 0.14);
+  color: var(--lock-ink, #fff);
+  cursor: pointer;
+  backdrop-filter: blur(12px);
+}
+html[data-lock='locked'][data-ready] .lock-refresh {
+  display: grid;
+}
+.lock-refresh:hover,
+.lock-refresh:focus-visible {
+  background: rgb(255 255 255 / 0.26);
+}
+.lock-refresh[data-busy] svg {
+  animation: lock-spin 0.8s linear infinite;
+}
+html[data-motion='reduced'] .lock-refresh[data-busy] svg,
+html[data-motion='off'] .lock-refresh[data-busy] svg {
+  animation: none;
+  opacity: 0.5;
+}
+@keyframes lock-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

@@ -1,0 +1,8 @@
+Message-ID: <50@secep.example>
+From: sender50@corp.example
+To: bob@corp.example
+Subject: [Task] Review CSP headers
+Date: Wed, 04 Nov 2026 16:28:00 +0000
+Content-Type: text/plain; charset=utf-8
+
+Ensure script-src self.

@@ -1,0 +1,9 @@
+Message-ID: <05@secep.example>
+From: ops@corp.example
+To: bob@corp.example
+Subject: Status
+Date: Wed, 04 Nov 2026 12:30:00 +0000
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: base64
+
+QmFzZTY0IGVuY29kZWQgc3RhdHVzIHVwZGF0ZTogYWxsIHN5c3RlbXMgZ3JlZW4u

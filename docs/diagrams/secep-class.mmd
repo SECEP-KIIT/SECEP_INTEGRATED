@@ -1,0 +1,258 @@
+%%{init: {'theme':'base','themeVariables':{'fontFamily':'Helvetica, Arial, sans-serif','fontSize':'13px','primaryColor':'#ffffff','primaryBorderColor':'#1c2530','primaryTextColor':'#1c2530','lineColor':'#1c2530','classText':'#1c2530'},'class':{'hideEmptyMembersBox':true}}}%%
+%% SECEP — UML class diagram of the domain model
+%% Source: SRS v1.0, section 6.6 (data model), 6.4 (contracts), 3 (behaviour). One table = one class.
+%% Every persisted class also carries id: UUID and tenantId: UUID (DC-04); omitted below for space.
+
+classDiagram
+  direction TB
+
+  %% ---------------- Organization ----------------
+  class Tenant {
+    -name: string
+    -domains: string[]
+    -createdAt: DateTime
+    +bootstrap(firstUser: User) User
+  }
+  class TenantSettings {
+    -jiraSiteUrl: string
+    -jiraEmail: string
+    -jiraTokenEnc: Ciphertext
+    -jiraProjectKey: string
+    -llmBaseUrl: string
+    -llmModel: string
+    -llmApiKeyEnc: Ciphertext
+    -confidenceThreshold: float = 0.60
+    -pollIntervalS: int = 30
+    +testConnections() ConnectionReport
+  }
+  class User {
+    -email: string
+    -displayName: string
+    -roleCategory: RoleCategory
+    -isAdmin: bool
+    -permissions: string[]
+    -lastLoginAt: DateTime
+    +hasPermission(p: string) bool
+    +signedInWithin(minutes: int) bool
+  }
+  class Mailbox {
+    -provider: string = gmail
+    -address: string
+    -historyId: string
+    -refreshTokenEnc: Ciphertext
+    -status: MailboxStatus
+    -lastPolledAt: DateTime
+    +poll() Email[]
+    +resync(days: int = 7)
+    +disconnect()
+  }
+
+  %% ---------------- Mail ----------------
+  class Thread {
+    -providerThreadId: string
+    -subjectNorm: string
+    -lastMessageAt: DateTime
+    -messageCount: int
+  }
+  class Email {
+    -providerMessageId: string
+    -messageIdHdr: string
+    -fromAddr: string
+    -toAddrs: string[]
+    -ccAddrs: string[]
+    -recipientPosition: to|cc|bcc
+    -subject: string
+    -receivedAt: DateTime
+    -bodyText: string
+    -mlText: string
+    -urls: Link[]
+    -attachments: AttachmentMeta[]
+    -authResults: AuthResults
+    -status: EmailStatus
+    -securityFlag: SecurityFlag
+    -duplicateCount: int
+    +isNearDuplicateOf(other: Email) bool
+  }
+  class EmailEmbedding {
+    -modelVersion: string
+    -embedding: float[768]
+  }
+  class MaskedSecret {
+    -secretType: string
+    -valueEnc: Ciphertext
+    +reveal(by: User) string
+  }
+
+  %% ---------------- Intelligence ----------------
+  class TriageResult {
+    -emailType: EmailType
+    -typeConf: float
+    -typeSource: LabelSource
+    -urgency: Urgency
+    -urgencyConf: float
+    -sentiment: Sentiment
+    -sentimentScore: float
+    -sentimentConf: float
+    -needsReview: bool
+    -modelVersion: string
+    -processedAt: DateTime
+    +correct(field, value, by: User) LabelCorrection
+  }
+  class Summary {
+    -oneLine: string
+    -short: string
+    -model: string
+  }
+  class LabelCorrection {
+    -field: string
+    -oldLabel: string
+    -newLabel: string
+    -createdAt: DateTime
+  }
+  class TriageModel {
+    -version: string
+    -artifactPath: string
+    -metrics: ModelCard
+    -status: ModelStatus
+    -promotedAt: DateTime
+    +canReplace(current: TriageModel) bool
+    +promote()
+  }
+
+  %% ---------------- Actions and security ----------------
+  class Action {
+    -type: ActionType
+    -payload: ActionPayload
+    -origin: decoder|user|rule
+    -status: ActionStatus
+    -boardColumn: BoardColumn
+    -boardPosition: int
+    -externalRef: string
+    -error: string
+    +accept(edits: ActionPayload)
+    +reject()
+    +moveTo(column: BoardColumn, position: int)
+  }
+  class UrlCheck {
+    -url: string
+    -anchorText: string
+    -host: string
+    -signals: RiskSignals
+    -verdict: Verdict
+    -finalUrl: string
+    -redirectChain: string[]
+    +resolve() Verdict
+  }
+  class AuditEntry {
+    -event: string
+    -target: string
+    -details: JSON
+    -prevHash: string
+    -hash: string
+    -createdAt: DateTime
+    +verify(previous: AuditEntry) bool
+  }
+
+  %% ---------------- Enumerations ----------------
+  class EmailType {
+    <<enumeration>>
+    Task
+    Info
+    Credentials
+    Meeting
+    Approval
+  }
+  class Urgency {
+    <<enumeration>>
+    Low
+    Medium
+    High
+    Critical
+  }
+  class Sentiment {
+    <<enumeration>>
+    Positive
+    Neutral
+    Negative
+    Frustrated
+  }
+  class RoleCategory {
+    <<enumeration>>
+    Executive
+    Manager
+    Engineer
+    Analyst
+    Consultant
+    ClientFacing
+    Other
+  }
+  class ActionType {
+    <<enumeration>>
+    create_jira_issue
+    add_board_card
+    add_calendar_event
+    none
+  }
+  class ActionStatus {
+    <<enumeration>>
+    proposed
+    accepted
+    executing
+    done
+    failed
+    rejected
+  }
+  class Verdict {
+    <<enumeration>>
+    clean
+    suspicious
+    malicious
+  }
+  class EmailStatus {
+    <<enumeration>>
+    ingested
+    triaged
+    enriched
+    enrich_pending
+    enrich_failed
+  }
+  class ModelStatus {
+    <<enumeration>>
+    candidate
+    promoted
+    retired
+  }
+
+  %% ---------------- Relationships ----------------
+  Tenant "1" *-- "1" TenantSettings : configured by
+  Tenant "1" o-- "1..*" User : members
+  Tenant "1" *-- "*" AuditEntry : append-only log
+  User "1" -- "0..1" Mailbox : connects
+  Mailbox "1" *-- "*" Thread
+  Mailbox "1" *-- "*" Email
+  Thread "1" o-- "1..*" Email : groups
+  Email "*" --> "0..1" Email : duplicateOf
+  Email "1" *-- "0..1" EmailEmbedding
+  Email "1" *-- "0..1" TriageResult
+  Email "1" *-- "0..1" Summary
+  Email "1" *-- "*" Action : proposes
+  Email "1" *-- "*" UrlCheck : links scored
+  Email "1" *-- "*" MaskedSecret : masked values
+  Email "1" *-- "*" LabelCorrection
+  User "1" --> "*" Action : owns
+  User "1" --> "*" MaskedSecret : sole revealer
+  User "1" --> "*" LabelCorrection : makes
+  User "0..1" --> "*" AuditEntry : actor
+  TriageResult ..> TriageModel : produced by
+  EmailEmbedding ..> TriageModel : encoded by
+  LabelCorrection ..> TriageModel : retrains
+
+  TriageResult ..> EmailType
+  TriageResult ..> Urgency
+  TriageResult ..> Sentiment
+  User ..> RoleCategory
+  Action ..> ActionType
+  Action ..> ActionStatus
+  UrlCheck ..> Verdict
+  Email ..> EmailStatus
+  TriageModel ..> ModelStatus

@@ -1,0 +1,1070 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* Page font and the wallpaper/lock base come from boot/lock.css, which loads first. */
+body {
+  color: var(--ink);
+}
+
+h1,
+h2,
+h3,
+p,
+ol,
+ul {
+  margin: 0;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+:focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 3px;
+  transition: outline-offset var(--dur-press) var(--ease-standard);
+}
+
+/* ── Floating sheet (FR-UI-001) ──────────────────────────────────────────────────────────────────────────────
+   Inset over the wallpaper. Sidebar and topbar are frosted; content is solid. It waits below the lock and rises
+   into place when the lock opens (--rise / --enter come from lock.css and honour the motion preference). */
+.sheet {
+  position: fixed;
+  inset: var(--sheet-inset);
+  z-index: 10;
+  display: grid;
+  grid-template-columns: var(--sidebar-w) minmax(0, 1fr);
+  grid-template-rows: var(--topbar-h) minmax(0, 1fr);
+  border-radius: var(--sheet-radius);
+  overflow: hidden;
+  color: var(--bar-ink);
+  opacity: 0;
+  transform: translateY(var(--rise));
+  transition:
+    transform var(--enter) ease-out,
+    opacity var(--enter) ease-out;
+}
+html[data-lock='open'] .sheet {
+  opacity: 1;
+  transform: none;
+}
+.sheet[data-collapsed] {
+  grid-template-columns: var(--sidebar-collapsed-w) minmax(0, 1fr);
+}
+/* Focus mode (FR-UI-004): no sidebar, slim topbar. */
+.sheet[data-focus] {
+  grid-template-columns: 0 minmax(0, 1fr);
+  grid-template-rows: 40px minmax(0, 1fr);
+}
+.sheet[data-focus] .sidebar {
+  visibility: hidden;
+}
+
+/* Frosted bars. The blur switches on only once the sheet has settled (html[data-settled], set by lock.ts):
+   nothing may animate beneath a moving backdrop-filter area (item 9). Blur is limited to the bars. */
+.sidebar-panel,
+.topbar {
+  background: var(--bar-fill-unsettled);
+}
+html[data-settled] .sidebar-panel,
+html[data-settled] .topbar {
+  background: var(--bar-fill);
+  -webkit-backdrop-filter: blur(18px) saturate(1.5);
+  backdrop-filter: blur(18px) saturate(1.5);
+}
+
+.sheet-content {
+  grid-column: 2;
+  grid-row: 2;
+  overflow: auto;
+  padding: var(--space-4);
+  background: var(--card);
+  color: var(--ink);
+}
+
+/* ── Sidebar (FR-UI-002) ─────────────────────────────────────────────────────────────────────────────────── */
+.sidebar {
+  grid-column: 1;
+  grid-row: 1 / span 2;
+  position: relative;
+  z-index: 3;
+  min-width: 0;
+}
+.sidebar-panel {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--sidebar-w);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-2);
+  overflow: hidden;
+}
+/* Only the project list scrolls, so Settings, Admin and Collapse stay on screen however many projects there are. */
+.nav-projects {
+  flex: 0 1 auto;
+  min-height: 0;
+  overflow: hidden auto;
+  scrollbar-width: thin;
+}
+.nav > li {
+  min-width: 0;
+}
+/* Collapsed: the 220 px panel is clipped to 64 px; hover-peek reveals it as an overlay, so content never moves.
+   clip-path instead of scaleX, because scaling would distort the frosted blur and the corner radius. Clipped
+   regions also don't take clicks, so the hidden part can't block the content beneath. */
+.sidebar[data-collapsed] .sidebar-panel {
+  clip-path: inset(0 calc(var(--sidebar-w) - var(--sidebar-collapsed-w)) 0 0 round 0);
+  transition: clip-path var(--dur-peek) ease-out;
+}
+.sidebar[data-collapsed][data-peek] .sidebar-panel {
+  clip-path: inset(0 0 0 0 round 0 var(--sheet-radius) var(--sheet-radius) 0);
+  box-shadow: 12px 0 32px rgb(30 34 48 / 0.18);
+}
+.sidebar[data-collapsed] .nav-label,
+.sidebar[data-collapsed] .nav-heading {
+  opacity: 0;
+  transition: opacity var(--dur-fade) ease-in;
+}
+.sidebar[data-collapsed][data-peek] .nav-label,
+.sidebar[data-collapsed][data-peek] .nav-heading {
+  opacity: 1;
+  transition: opacity var(--dur-peek) ease-out 60ms;
+}
+
+.nav {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 2px;
+}
+.nav-bottom {
+  margin-top: auto;
+}
+.nav-heading {
+  padding: 0 var(--space-3) var(--space-1);
+  color: var(--bar-ink-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+/* Projects (task 10): + for a new project, drop target for dragged cards, archived ones folded and dimmed. */
+#nav-projects-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.nav-add {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+.nav-add:hover {
+  background: var(--bar-hover);
+}
+.nav-add:focus-visible {
+  outline: 2px solid var(--focus-ring);
+}
+.nav-link[data-drop] {
+  outline: 2px dashed var(--accent);
+  outline-offset: -2px;
+  background: var(--bar-active);
+}
+.nav-link[data-archived] {
+  opacity: 0.7;
+}
+.nav-archived > summary {
+  margin-top: var(--space-2);
+  cursor: pointer;
+  list-style-position: inside;
+}
+.nav-link,
+.nav-user {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: 40px;
+  padding: 0 var(--space-3) 0 0;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--bar-ink-muted);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+/* The avatar row holds the avatar menu's button; the menu opens above it (proposals §16.6). */
+.nav-user {
+  display: block;
+  padding: 0;
+  cursor: default;
+}
+.user-menu {
+  position: fixed;
+  z-index: 60;
+  display: grid;
+  gap: var(--space-3);
+  width: 248px;
+  padding: var(--space-3);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--card-bg);
+  color: var(--ink);
+  box-shadow: 0 10px 28px rgb(20 24 38 / 0.22);
+}
+.user-menu-who {
+  display: grid;
+  font-size: 0.8125rem;
+  overflow-wrap: anywhere;
+}
+.user-menu-who span {
+  color: var(--ink-muted);
+}
+.user-menu-signout {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  height: 32px;
+  padding: 0 var(--space-2);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.8125rem;
+}
+.user-menu-signout:hover {
+  background: var(--tag-muted-bg);
+}
+.user-menu-signout:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+/* Sign-in screen (F5): a card on the wallpaper, no shell behind it. */
+.signin {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: var(--space-4);
+}
+.signin-card {
+  display: grid;
+  gap: var(--space-3);
+  width: min(380px, 100%);
+  padding: 32px 28px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--card-bg);
+  color: var(--ink);
+  box-shadow: 0 20px 48px rgb(20 24 38 / 0.22);
+  text-align: center;
+}
+.signin-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+.signin-sub,
+.signin-note {
+  color: var(--ink-muted);
+  font-size: 0.875rem;
+}
+.signin-note {
+  font-size: 0.75rem;
+}
+.signin-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  height: 44px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--accent);
+  color: #fff;
+  font: inherit;
+  font-weight: 650;
+}
+.signin-button:disabled {
+  opacity: 0.7;
+}
+.signin-button:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 3px;
+}
+
+/* Light / Dark / Auto: a row of radios; the chosen one is filled and bold, with its icon (not colour alone). */
+.theme-choice {
+  display: grid;
+  gap: var(--space-1);
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.theme-choice legend {
+  padding: 0 var(--space-1);
+  color: var(--ink-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.theme-options {
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+}
+.theme-option {
+  position: relative;
+  display: inline-flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 32px;
+  border-radius: var(--radius-pill);
+  color: var(--ink-muted);
+  font-size: 0.8125rem;
+  cursor: pointer;
+}
+.theme-option input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+.theme-option[data-checked] {
+  background: var(--accent);
+  color: #fff;
+  font-weight: 700;
+}
+.theme-option:has(input:focus-visible) {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+.more-theme {
+  margin-top: var(--space-4);
+  max-width: 320px;
+}
+.nav-link:hover {
+  background: var(--bar-hover);
+  color: var(--bar-ink);
+}
+/* Active page: weight and a filled background, not colour alone */
+.nav-link[aria-current='page'] {
+  background: var(--bar-active);
+  color: var(--bar-ink);
+  font-weight: 650;
+}
+.nav-icon {
+  position: relative;
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 48px; /* 64 px collapsed column minus the panel padding */
+}
+.nav-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.badge {
+  min-width: 20px;
+  padding: 0 6px;
+  border-radius: var(--radius-pill);
+  background: var(--bar-hover);
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 20px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+/* Collapsed and not peeking: the badge moves onto the icon. */
+.sidebar[data-collapsed]:not([data-peek]) .badge {
+  position: absolute;
+  top: 2px;
+  left: 28px;
+  min-width: 16px;
+  padding: 0 4px;
+  font-size: 0.625rem;
+  line-height: 16px;
+}
+/* Critical unread: a dot with a ring, so it reads by shape against any icon colour. */
+.crit-dot {
+  position: absolute;
+  top: -2px;
+  right: 10px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--critical);
+  box-shadow: 0 0 0 2px var(--card);
+}
+.project-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+.progress-ring {
+  flex-shrink: 0;
+}
+.progress-ring-track,
+.progress-ring-value {
+  fill: none;
+  stroke-width: 2.5;
+}
+.progress-ring-value {
+  stroke-linecap: round;
+}
+/* The unfilled part is a faint full circle, so a 0 % ring still reads as a ring around the dot, not a solid dot. */
+.progress-ring-track {
+  stroke: currentColor;
+  opacity: 0.28;
+}
+.avatar {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--bar-active);
+  color: var(--bar-ink);
+  font-size: 0.8125rem;
+  font-weight: 650;
+}
+
+/* Ambient urgency glow (FR-UI-005): pre-drawn, animates opacity only; pulses 3 × 1.5 s on new Critical mail. */
+.glow {
+  position: absolute;
+  top: 10%;
+  bottom: 10%;
+  right: 0;
+  z-index: 4;
+  width: 3px;
+  border-radius: 2px;
+  background: linear-gradient(to bottom, transparent, var(--glow) 25%, var(--glow) 75%, transparent);
+  box-shadow: 0 0 16px 4px rgb(255 122 61 / 0.45);
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 600ms ease-out,
+    transform var(--dur-peek) ease-out;
+}
+/* The glow marks the sidebar's outer edge, so it follows the hover-peek out to the expanded width, in step with the
+   clip-path reveal (same duration and easing). Transform only. */
+.sidebar[data-collapsed][data-peek] .glow {
+  transform: translateX(calc(var(--sidebar-w) - var(--sidebar-collapsed-w)));
+}
+.sidebar[data-glow] .glow {
+  opacity: 0.8;
+}
+.sidebar[data-glow] .glow.pulse {
+  animation: glow-pulse 1.5s ease-in-out 3;
+}
+@keyframes glow-pulse {
+  50% {
+    opacity: 0.25;
+  }
+}
+html[data-motion='reduced'] .glow.pulse,
+html[data-motion='off'] .glow.pulse {
+  animation: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  html:not([data-motion]) .glow.pulse {
+    animation: none;
+  }
+}
+
+/* ── Topbar (FR-UI-001) ──────────────────────────────────────────────────────────────────────────────────── */
+.topbar {
+  grid-column: 2;
+  grid-row: 1;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: var(--space-4);
+  padding: 0 var(--space-4);
+  min-width: 0;
+}
+.topbar-left,
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+}
+.topbar-right {
+  justify-content: flex-end;
+}
+.topbar-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 1.0625rem;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  font-weight: 650;
+}
+.topbar-clock,
+.sync {
+  color: var(--bar-ink-muted);
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.topbar-context:empty {
+  display: none;
+}
+/* With cards selected, the selection bar takes the search pill's place (item 1, contextual mode). */
+.topbar-context:not(:empty) + .search-pill {
+  display: none;
+}
+.search-pill {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: min(360px, 32vw);
+  height: 34px;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--bar-hover);
+  border-radius: var(--radius-pill);
+  background: var(--bar-hover);
+  color: var(--bar-ink-muted);
+  font-size: 0.875rem;
+}
+.search-pill-label {
+  flex: 1;
+  text-align: left;
+}
+.search-pill kbd {
+  font: inherit;
+  font-size: 0.75rem;
+  opacity: 0.8;
+}
+.icon-button {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--bar-ink);
+}
+.icon-button:hover:not(:disabled) {
+  background: var(--bar-hover);
+}
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+.sheet[data-focus] .search-pill {
+  height: 28px;
+}
+
+.sync {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 9.5em; /* stable width as the text changes */
+  justify-content: flex-end;
+}
+.sync-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #2b8a3e;
+  animation: sync-pulse 400ms ease-out;
+}
+@keyframes sync-pulse {
+  from {
+    transform: scale(1.8);
+    opacity: 0.4;
+  }
+}
+html[data-motion='reduced'] .sync-dot,
+html[data-motion='off'] .sync-dot {
+  animation: none;
+}
+
+/* ── Phone tab bar (FR-UI-001) ───────────────────────────────────────────────────────────────────────────── */
+.tabbar {
+  display: none;
+}
+/* Phone (src/lib/breakpoints.ts, ≤ 640 px): selected on <html data-device>, not a media query. */
+html[data-device='phone'] .sheet,
+html[data-device='phone'] .sheet[data-collapsed],
+html[data-device='phone'] .sheet[data-focus] {
+  inset: 0;
+  border-radius: 0;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: var(--topbar-h) minmax(0, 1fr) auto;
+}
+html[data-device='phone'] .sidebar {
+  display: none;
+}
+html[data-device='phone'] .topbar,
+html[data-device='phone'] .sheet-content {
+  grid-column: 1;
+}
+/* Three zones in one row: left (title, clock) shrinks and truncates; search, bell and + keep their size. */
+html[data-device='phone'] .topbar {
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: var(--space-2);
+  padding: 0 var(--space-3);
+}
+html[data-device='phone'] .topbar-right {
+  gap: var(--space-1);
+}
+html[data-device='phone'] .topbar-centre .search-pill {
+  width: 34px;
+  padding: 0;
+  justify-content: center;
+}
+html[data-device='phone'] .search-pill-label,
+html[data-device='phone'] .search-pill kbd,
+html[data-device='phone'] .sync {
+  display: none;
+}
+html[data-device='phone'] .tabbar {
+  grid-column: 1;
+  grid-row: 3;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  padding: var(--space-1) var(--space-1) max(var(--space-1), env(safe-area-inset-bottom));
+  background: var(--bar-fill-unsettled);
+}
+html[data-device='phone'][data-settled] .tabbar {
+  background: var(--bar-fill);
+  -webkit-backdrop-filter: blur(18px) saturate(1.5);
+  backdrop-filter: blur(18px) saturate(1.5);
+}
+html[data-device='phone'] .tab {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  padding: 6px 0;
+  border-radius: 8px;
+  color: var(--bar-ink-muted);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  text-decoration: none;
+}
+html[data-device='phone'] .tab[aria-current='page'] {
+  color: var(--bar-ink);
+  font-weight: 650;
+  background: var(--bar-active);
+}
+html[data-device='phone'] .tab .crit-dot {
+  right: 12px;
+}
+
+
+/* ── Lock-screen content rendered by React into the static slots (LockSlots.tsx) ───────────────────────────── */
+.lock-subject {
+  display: block;
+  font-size: 0.875rem;
+}
+.lock-note {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0 var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: 12px;
+  background: var(--lock-card);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  text-align: left;
+  font-size: 0.875rem;
+}
+.lock-note-title {
+  font-weight: 600;
+}
+.lock-note-body {
+  grid-column: 1;
+  grid-row: 2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--lock-ink-soft);
+}
+.lock-note time {
+  grid-column: 2;
+  grid-row: 1;
+  color: var(--lock-ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Pages ───────────────────────────────────────────────────────────────────────────────────────────────── */
+.empty {
+  color: var(--ink-muted);
+  font-size: 0.875rem;
+}
+.more-list {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: var(--space-1);
+}
+.more-link {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 44px;
+  padding: 0 var(--space-3);
+  border-radius: 8px;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+/* Masked-secret chip (MaskedText) */
+.masked {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 0.125rem var(--space-2);
+  border-radius: var(--radius-pill);
+  border: var(--border-clay);
+  background: var(--masked-bg);
+  color: var(--masked-fg);
+  font-size: 0.75rem;
+  line-height: 1.4;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+/* Notification bell (FR-REM-004, task 13). */
+.bell {
+  position: relative;
+}
+.bell-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: var(--radius-pill);
+  background: #c4271b;
+  color: #fff;
+  box-shadow: 0 0 0 2px var(--card-bg, #fff);
+  font-size: 0.75rem;
+  font-weight: 800;
+  line-height: 16px;
+  text-align: center;
+  /* Pops each time the count grows (keyed on the count): transform and opacity only. */
+  animation: badge-pop 320ms cubic-bezier(0.2, 1.6, 0.4, 1);
+}
+@keyframes badge-pop {
+  from {
+    opacity: 0.4;
+    transform: scale(0.4);
+  }
+}
+html[data-motion='reduced'] .bell-badge,
+html[data-motion='off'] .bell-badge {
+  animation: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  html:not([data-motion]) .bell-badge {
+    animation: none;
+  }
+}
+
+/* Reminders drop in from the top of the screen (FR-REM-004). */
+.top-alerts {
+  position: fixed;
+  top: 12px;
+  left: 50%;
+  z-index: 70;
+  display: grid;
+  gap: var(--space-2);
+  width: min(460px, calc(100vw - 24px));
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+.top-alert {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--line);
+  border-left: 4px solid #c4271b;
+  border-radius: var(--tile-radius);
+  background: var(--card-bg);
+  color: var(--ink);
+  box-shadow: 0 10px 30px rgb(0 0 0 / 0.35);
+  pointer-events: auto;
+  animation: alert-in 260ms cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+.top-alert-main {
+  display: grid;
+  flex: 1;
+  gap: 2px;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.top-alert-main span {
+  overflow: hidden;
+  font-size: 0.8125rem;
+  opacity: 0.85;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.alert-ring {
+  flex: none;
+  /* Starts at 12 o'clock and empties anticlockwise (mirrored). */
+  transform: scaleX(-1) rotate(-90deg);
+}
+.alert-ring circle {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-dasharray: 100;
+  /* Runs once over the alert's lifetime; paused with the timer on hover or focus. */
+  animation: alert-ring linear forwards;
+}
+.top-alert[data-paused] .alert-ring circle {
+  animation-play-state: paused;
+}
+@keyframes alert-ring {
+  to {
+    stroke-dashoffset: 100;
+  }
+}
+@keyframes alert-in {
+  from {
+    opacity: 0;
+    transform: translateY(-24px);
+  }
+}
+html[data-motion='reduced'] .top-alert,
+html[data-motion='off'] .top-alert,
+html[data-motion='reduced'] .alert-ring circle,
+html[data-motion='off'] .alert-ring circle {
+  animation: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  html:not([data-motion]) .top-alert,
+  html:not([data-motion]) .alert-ring circle {
+    animation: none;
+  }
+}
+.bell-pop {
+  z-index: 60;
+  width: min(380px, calc(100vw - 16px));
+  max-height: min(70vh, 520px);
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--tile-radius);
+  background: var(--card-bg);
+  color: var(--ink);
+  box-shadow: 0 8px 28px rgb(0 0 0 / 0.3);
+}
+.bell-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--line);
+}
+.bell-empty {
+  margin: 0;
+  padding: var(--space-3);
+  font-size: 0.8125rem;
+  opacity: 0.8;
+}
+.bell-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.bell-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.bell-item:hover,
+.bell-item:focus-visible {
+  background: var(--tag-muted-bg);
+}
+.bell-item[data-unread] .bell-title {
+  font-weight: 700;
+}
+.bell-item[data-unread]::before {
+  align-self: center;
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  content: '';
+}
+.bell-text {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+  gap: 2px;
+}
+.bell-body {
+  overflow: hidden;
+  font-size: 0.8125rem;
+  opacity: 0.8;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.bell-item time {
+  flex: none;
+  font-size: 0.75rem;
+  opacity: 0.7;
+}
+
+/* A cut-off project name floats out past the sidebar's right edge (fixed, so the panel's clipping doesn't apply). */
+.nav-float {
+  position: fixed;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-sm, 6px);
+  background: var(--card-bg);
+  color: var(--ink);
+  box-shadow: 0 6px 20px rgb(0 0 0 / 0.28);
+  font-size: inherit;
+  white-space: nowrap;
+  pointer-events: none;
+  animation: nav-float-in 120ms ease-out;
+}
+@keyframes nav-float-in {
+  from {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .nav-float {
+    animation: none;
+  }
+}
+.nav-float-icon {
+  margin-right: 0.35em;
+}
+
+/* Lock screen glance (readability): frosted chips per fact, and the opted-in subjects as one card. */
+.lock-glance {
+  display: grid;
+  justify-items: center;
+  gap: 0.75rem;
+}
+.lock-chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+}
+.lock-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.3rem 0.85rem;
+  border-radius: 999px;
+  background: var(--lock-card);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  color: var(--lock-ink, inherit);
+  font-weight: 500;
+}
+.lock-chip[data-kind='crit']::before {
+  content: '';
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 2px;
+  background: #c4271b;
+  transform: rotate(45deg);
+}
+.lock-chip-detail {
+  padding-left: 0.5rem;
+  border-left: 1px solid currentColor;
+  opacity: 0.75;
+  font-variant-numeric: tabular-nums;
+}
+.lock-subjects {
+  display: grid;
+  gap: 0.35rem;
+  width: min(420px, 86vw);
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  background: var(--lock-card);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  text-align: left;
+  font-size: 0.875rem;
+}
+.lock-subjects-head {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  opacity: 0.7;
+  text-transform: uppercase;
+}
+.lock-subject {
+  overflow: hidden;
+  padding-left: 0.6rem;
+  border-left: 2px solid #c4271b;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.lock-more {
+  opacity: 0.7;
+}
+html[data-device='phone'] .lock-now {
+  display: none;
+}

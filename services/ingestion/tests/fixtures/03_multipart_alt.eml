@@ -1,0 +1,17 @@
+Message-ID: <03@secep.example>
+From: Dave <dave@corp.example>
+To: bob@corp.example
+Subject: Deployment window
+Date: Wed, 04 Nov 2026 11:00:00 +0000
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="alt03"
+
+--alt03
+Content-Type: text/plain; charset=utf-8
+
+Short plain text.
+--alt03
+Content-Type: text/html; charset=utf-8
+
+<p>Detailed HTML deployment plan with rollback steps and verification checklist.</p><p>See <a href="https://docs.corp.example/deploy">Runbook</a>.</p>
+--alt03--

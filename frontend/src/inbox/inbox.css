@@ -1,0 +1,1264 @@
+/* Cards and the column widget (decisions items 3, 4, 6). Lazy: ships with the inbox chunk.
+   Card heights are fixed per density and must match ROW_PITCH in cardModel.ts (pitch = height + 8 px gap). */
+
+.inbox-page {
+  height: 100%;
+  min-height: 0;
+}
+/* The full Inbox view: a wider reading column, centred on the page (tiles and phones keep their own rules). */
+.inbox-page > .column {
+  width: 100%;
+  max-width: 900px;
+  margin-inline: auto;
+}
+.security-page {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+  height: 100%;
+  min-height: 0;
+}
+
+/* ── Column ──────────────────────────────────────────────────────────────────────────────────────────────── */
+.column {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  max-width: 760px;
+  border: 1px solid var(--line);
+  border-radius: var(--tile-radius);
+  background: var(--col-bg);
+  /* The compact toolbar follows the column's own width (QA pass 3), see "Narrow columns" below. */
+  container: column / inline-size;
+}
+.col-head {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-3) var(--space-2);
+  border-bottom: 1px solid var(--line);
+}
+/* F6: on a narrow column the tools wrap under the title instead of overflowing it (no horizontal scroll). */
+.col-title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-2);
+  min-width: 0;
+}
+.col-title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.col-count {
+  color: var(--ink-muted);
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
+}
+.col-title-end {
+  display: inline-flex;
+  align-items: center;
+  margin-left: auto;
+  flex: none;
+}
+.col-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+  min-width: 0;
+}
+.col-tool,
+.col-select {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  height: 30px;
+  min-width: 30px;
+  padding: 0 var(--space-2);
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: none;
+  color: var(--ink-muted);
+  font-size: 0.8125rem;
+}
+.col-tool:hover,
+.col-select:hover {
+  background: var(--card-bg);
+  border-color: var(--line);
+}
+.col-select select {
+  max-width: 11em;
+  min-width: 0;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  text-overflow: ellipsis;
+}
+.col-tool-count {
+  min-width: 16px;
+  padding: 0 4px;
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  line-height: 16px;
+  text-align: center;
+}
+.col-note {
+  color: var(--ink-muted);
+  font-size: 0.75rem;
+}
+
+/* Header urgency bar: segments in fixed order Critical → Low; the text alternative carries the numbers. */
+.urgency-bar {
+  display: flex;
+  gap: 2px;
+  height: 4px;
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+}
+.urgency-bar span {
+  flex-basis: 0;
+}
+.urgency-bar [data-urgency='Critical'] { background: var(--urg-critical); }
+.urgency-bar [data-urgency='High'] { background: var(--urg-high); }
+.urgency-bar [data-urgency='Medium'] { background: var(--urg-medium); }
+.urgency-bar [data-urgency='Low'] { background: var(--urg-low); }
+
+/* Quick chips (FR-UI-021): toggles; pressed = filled, plus weight, never colour alone. */
+.quick-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+.quick-chip {
+  height: 26px;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-pill);
+  background: var(--card-bg);
+  color: var(--ink);
+  font-size: 0.75rem;
+}
+.quick-chip:hover {
+  background: var(--tag-muted-bg);
+}
+.quick-chip[aria-pressed='true'] {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+  font-weight: 600;
+}
+.quick-chip:focus-visible,
+.chip:focus-visible,
+.col-tool:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+/* Removable filter chips (item 6). No filters, no row. */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  list-style: none;
+  padding: 0;
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  height: 24px;
+  padding: 0 var(--space-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  background: var(--card-bg);
+  color: var(--ink);
+  font-size: 0.75rem;
+}
+.chip:hover {
+  border-color: var(--line-strong);
+}
+
+.col-body {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+}
+.col-scroll {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: var(--space-2) var(--space-2) 0;
+}
+.col-rows {
+  position: relative;
+}
+.col-row {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding-bottom: 8px;
+  /* Item 9: a card that leaves lets the ones below glide up (180 ms), and a re-sort glides cards to their new
+     places (200 ms). Rows are keyed by email, so only rows that stay move; new rows simply appear. */
+  transition: transform 190ms ease-out;
+}
+html[data-motion='reduced'] .col-row,
+html[data-motion='off'] .col-row {
+  transition: none;
+}
+
+/* "↑ n new" (FR-UI-024): floats over the list, so showing it moves nothing. */
+.new-pill {
+  position: absolute;
+  top: var(--space-2);
+  left: 50%;
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  height: 30px;
+  padding: 0 var(--space-3);
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  transform: translateX(-50%);
+  animation: pill-in var(--dur-menu) ease-out;
+}
+@keyframes pill-in {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-4px);
+  }
+}
+
+.col-state {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-2);
+  padding: var(--space-6) var(--space-4);
+  color: var(--ink-muted);
+  font-size: 0.875rem;
+  text-align: center;
+}
+.col-state-title {
+  color: var(--ink);
+  font-size: 1rem;
+  font-weight: 600;
+}
+.text-button {
+  border: 0;
+  background: none;
+  color: var(--accent-text);
+  font: inherit;
+  font-weight: 600;
+  padding: var(--space-1) var(--space-2);
+  border-radius: 6px;
+}
+.text-button:hover:not(:disabled) {
+  background: var(--fresh-tint);
+}
+
+/* ── Card ────────────────────────────────────────────────────────────────────────────────────────────────── */
+.card {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: 20px 20px 20px 22px;
+  row-gap: 1px;
+  align-items: center;
+  height: 104px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--tile-radius);
+  background: var(--card-bg);
+  color: var(--ink);
+  font-size: 0.8125rem;
+  overflow: hidden;
+}
+.card[data-density='spacious'] {
+  height: 124px;
+  padding: 12px 14px;
+  row-gap: 4px;
+}
+/* Compact: subject and summary share one line, so all of layer 1 still shows. */
+.card[data-density='compact'] {
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-rows: 20px 20px 22px;
+  column-gap: var(--space-2);
+  height: 76px;
+  padding: 6px 10px;
+  row-gap: 0;
+}
+.card[data-density='compact'] .card-meta,
+.card[data-density='compact'] .card-tags {
+  grid-column: 1 / -1;
+}
+.card[data-density='compact'] .card-subject {
+  max-width: 34ch;
+}
+.card:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 1px;
+}
+
+.card-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+  color: var(--ink-muted);
+}
+.card-sender {
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+/* Unread (proposals §12.3): a dot before the sender plus a heavier sender name, so it isn't colour alone. Same line
+   height either way, so reading an email never changes the card's height. */
+.card-unread {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+.card-sender[data-unread] {
+  font-weight: 600;
+}
+.card-role {
+  flex: none;
+  color: var(--ink-muted);
+  font-size: 0.75rem;
+}
+.card-role::before {
+  content: '·';
+  margin-right: var(--space-2);
+}
+.card-meta-end {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-left: auto;
+  flex: none;
+}
+.card-pin {
+  display: inline-flex;
+  color: var(--ink-muted);
+}
+.card-time {
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
+/* The one bold line per card (item 3). Everything truncates; nothing wraps. */
+.card-subject,
+.card-summary {
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.card-subject {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+.card-summary {
+  color: var(--ink-muted);
+}
+.card-summary-missing {
+  font-style: italic;
+}
+.card .masked {
+  padding: 0 var(--space-1);
+  font-size: 0.6875rem;
+  line-height: 1.3;
+}
+
+/* Type chip: icon only; dotted with "?" when needs_review (FR-UI-012). */
+.type-chip,
+.urgency {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  flex: none;
+  height: 20px;
+  min-width: 20px;
+  padding: 0 2px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: none;
+  color: var(--ink);
+  font-size: 0.75rem;
+}
+.type-chip:hover,
+.urgency:hover {
+  border-color: var(--line);
+}
+.type-chip-review {
+  padding: 0 var(--space-1);
+  border: 1px dashed var(--line-strong);
+}
+.type-chip-review:hover {
+  border-style: solid;
+}
+.urgency-mark {
+  display: block;
+}
+.urgency-mark[data-urgency='Critical'] { fill: var(--urg-critical); }
+.urgency-mark[data-urgency='High'] { fill: var(--urg-high); }
+.urgency-mark[data-urgency='Medium'] { stroke: var(--urg-medium); }
+.urgency-mark[data-urgency='Low'] { fill: var(--urg-low); }
+
+/* ── Tags (item 4, FR-UI-014) ─────────────────────────────────────────────────────────────────────────────── */
+.card-tags {
+  min-width: 0;
+  height: 22px;
+}
+.tag-row {
+  display: flex;
+  gap: var(--space-1);
+  list-style: none;
+  padding: 0;
+  overflow: hidden;
+}
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  height: 20px;
+  padding: 0 6px;
+  border: 0;
+  border-radius: 6px;
+  background: var(--tag-muted-bg);
+  color: var(--tag-muted-fg);
+  font: inherit;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.tag[data-tone='danger'] { background: var(--tag-danger-bg); color: var(--tag-danger-fg); }
+.tag[data-tone='warn'] { background: var(--tag-warn-bg); color: var(--tag-warn-fg); }
+.tag[data-tone='ok'] { background: var(--tag-ok-bg); color: var(--tag-ok-fg); }
+button.tag:hover {
+  outline: 1px solid currentColor;
+}
+.tag:focus-visible,
+.type-chip:focus-visible,
+.urgency:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 1px;
+}
+
+/* ── Skeletons (item 3: skeletons, not spinners) ─────────────────────────────────────────────────────────── */
+.skel {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  border-radius: 4px;
+  background: var(--skel);
+}
+.skel::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, var(--skel-shine), transparent);
+  transform: translateX(-100%);
+  animation: shimmer 1.2s linear infinite;
+}
+@keyframes shimmer {
+  to {
+    transform: translateX(100%);
+  }
+}
+.skel-chip {
+  width: 18px;
+  height: 18px;
+  flex: none;
+}
+.skel-word {
+  width: 96px;
+  height: 10px;
+}
+.skel-line {
+  width: 70%;
+  height: 10px;
+}
+.skel-line-bold {
+  width: 55%;
+  height: 12px;
+}
+.card-summary .skel-line {
+  display: inline-block;
+  vertical-align: middle;
+}
+.card-skeleton {
+  grid-template-rows: 20px 20px 20px;
+}
+
+/* ── Fresh arrivals (item 9: fade in with an accent tint that fades over 2 s) ─────────────────────────────── */
+.card[data-fresh] {
+  animation: card-in 200ms ease-out;
+}
+.card[data-fresh]::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--fresh-tint);
+  pointer-events: none;
+  animation: tint-out var(--dur-fresh) ease-out forwards;
+}
+@keyframes card-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes tint-out {
+  to {
+    opacity: 0;
+  }
+}
+
+/* ── Menus and popovers (Radix; item 9: fade + scale 0.96 → 1 from the anchor, 120 ms) ──────────────────── */
+.menu {
+  z-index: 50;
+  min-width: 200px;
+  padding: var(--space-2);
+  border: 1px solid var(--line);
+  border-radius: var(--tile-radius);
+  background: var(--card-bg);
+  color: var(--ink);
+  font-size: 0.8125rem;
+  box-shadow: 0 8px 24px rgb(30 34 48 / 0.14);
+  transform-origin: var(--radix-popover-content-transform-origin);
+  animation: menu-in var(--dur-menu) ease-out;
+}
+@keyframes menu-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+.menu-title {
+  padding: var(--space-1) var(--space-2);
+  color: var(--ink-muted);
+  font-size: 0.75rem;
+}
+.menu-list {
+  display: grid;
+}
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 32px;
+  padding: 0 var(--space-2);
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+}
+.menu-item:hover:not(:disabled),
+.menu-item:focus-visible {
+  background: var(--tag-muted-bg);
+  outline: none;
+}
+.menu-item[aria-pressed='true'] {
+  font-weight: 600;
+}
+.menu-error {
+  padding: var(--space-1) var(--space-2);
+  color: var(--tag-danger-fg);
+}
+
+.filter-popover {
+  display: grid;
+  gap: var(--space-3);
+  width: min(340px, calc(100vw - 24px));
+  max-height: min(70vh, 560px);
+  overflow-y: auto;
+  padding: var(--space-3);
+}
+.filter-group {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.filter-group legend {
+  margin-bottom: var(--space-1);
+  color: var(--ink-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.filter-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-3);
+}
+.filter-option {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: 28px;
+}
+.filter-text,
+.filter-dates input {
+  height: 30px;
+  padding: 0 var(--space-2);
+  border: 1px solid var(--line-strong);
+  border-radius: 6px;
+  background: var(--card-bg);
+  color: var(--ink);
+  font: inherit;
+}
+.filter-dates {
+  grid-template-columns: 1fr 1fr;
+}
+.filter-dates legend {
+  grid-column: 1 / -1;
+}
+.filter-dates label {
+  display: grid;
+  gap: 2px;
+  color: var(--ink-muted);
+  font-size: 0.75rem;
+}
+.filter-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--line);
+}
+.filter-head-title {
+  color: var(--ink-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+/* ── Legend (`?`) ─────────────────────────────────────────────────────────────────────────────────────────── */
+.legend {
+  width: min(640px, calc(100vw - 32px));
+  padding: var(--space-4);
+  border: 1px solid var(--line);
+  border-radius: var(--tile-radius);
+  background: var(--card-bg);
+  color: var(--ink);
+}
+.legend::backdrop {
+  background: rgb(20 24 36 / 0.35);
+}
+.legend h2 {
+  font-size: 1rem;
+  margin-bottom: var(--space-3);
+}
+.legend h3 {
+  font-size: 0.8125rem;
+  color: var(--ink-muted);
+  margin-bottom: var(--space-2);
+}
+.legend-cols {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: var(--space-4);
+}
+.legend ul {
+  display: grid;
+  gap: var(--space-2);
+  list-style: none;
+  padding: 0;
+  font-size: 0.8125rem;
+}
+.legend li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.legend-hint {
+  margin: var(--space-3) 0;
+  color: var(--ink-muted);
+  font-size: 0.8125rem;
+}
+
+/* ── Reduced motion (FR-UI-032): cross-fades instead of movement; shimmer static ────────────────────────── */
+html[data-motion='reduced'] .menu,
+html[data-motion='reduced'] .new-pill {
+  animation-name: fade-in;
+  animation-duration: 100ms;
+}
+html[data-motion='reduced'] .skel::after,
+html[data-motion='off'] .skel::after {
+  animation: none;
+  opacity: 0;
+}
+html[data-motion='off'] .menu,
+html[data-motion='off'] .new-pill,
+html[data-motion='off'] .card[data-fresh] {
+  animation: none;
+}
+/* Off: the tint stays static for its 2 s instead of fading. */
+html[data-motion='off'] .card[data-fresh]::after {
+  animation: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  html:not([data-motion]) .menu,
+  html:not([data-motion]) .new-pill {
+    animation-name: fade-in;
+    animation-duration: 100ms;
+  }
+  html:not([data-motion]) .skel::after {
+    animation: none;
+    opacity: 0;
+  }
+}
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* Phone (src/lib/breakpoints.ts, ≤ 640 px): selected on <html data-device>, not a media query. */
+html[data-device='phone'] .column {
+  max-width: none;
+}
+/* ── Narrow columns (QA pass 3): dashboard tiles, phone, any column under 480 px wide ──────────────────────
+   A container query on the column's own width, not the screen's. That's allowed next to the one breakpoint
+   constant (src/lib/breakpoints.ts): the breakpoint test forbids only media queries on width, which describe the
+   screen; this describes the column.
+   The tools stay on the title row as icons only. Sort and density keep their native select, invisible over the icon
+   (still focusable and announced); a dot marks a non-default choice, and the filter shows its count. */
+@container column (max-width: 480px) {
+  .col-select {
+    width: 30px;
+    padding: 0;
+    justify-content: center;
+  }
+  .col-select select {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    max-width: none;
+    opacity: 0;
+    cursor: pointer;
+  }
+  .col-select:focus-within {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+  }
+  .col-select[data-set] .col-tool-dot {
+    display: block;
+  }
+  /* Quick chips (full view only): one row that scrolls sideways instead of wrapping. */
+  .quick-chips {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+  }
+  .quick-chips::-webkit-scrollbar {
+    display: none;
+  }
+  .quick-chip {
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+  /* One title row: the title truncates before any tool wraps under it. */
+  .col-title-row {
+    flex-wrap: nowrap;
+  }
+  .col-tools {
+    flex-wrap: nowrap;
+    gap: 0;
+  }
+  .col-count {
+    flex: none;
+  }
+}
+
+/* A non-default sort or density on the compact toolbar: a dot on the icon (a shape, not colour alone). */
+.col-tool-dot {
+  display: none;
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 7px;
+  height: 7px;
+  border: 1.5px solid var(--card-bg);
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+/* ── Card layer 2: the hover lift (FR-UI-011, item 3; QA pass 3) ─────────────────────────────────────────────
+   A fixed copy over the card, in a portal outside the list's scroller: the action bar above it (or below when
+   there's no room), every tag below it (or above). It covers neighbours, never moves them. Only opacity and
+   transform animate; the raised card lets the pointer through to the real one. */
+.card {
+  cursor: pointer;
+}
+/* Touch: a long-press opens the card's action menu, so the browser's own callout and text selection stay out. */
+@media (hover: none) {
+  .card {
+    -webkit-touch-callout: none;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+}
+.card-lift {
+  position: fixed;
+  z-index: 40;
+  pointer-events: none;
+  opacity: 0;
+}
+.card-lift[data-placed] {
+  opacity: 1;
+  animation: lift-in var(--dur-menu) ease-out;
+}
+.lift-card {
+  height: 100%;
+  pointer-events: none;
+  box-shadow: 0 10px 28px rgb(20 24 38 / 0.22);
+  transform: translateY(-2px);
+}
+@keyframes lift-in {
+  from {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+}
+html[data-motion='reduced'] .card-lift[data-placed],
+html[data-motion='off'] .card-lift[data-placed] {
+  animation: none;
+}
+html[data-motion='reduced'] .lift-card,
+html[data-motion='off'] .lift-card {
+  transform: none;
+}
+.lift-bar {
+  position: absolute;
+  right: 0;
+  pointer-events: auto;
+}
+.lift-bar[data-place='above'] {
+  bottom: calc(100% + 4px);
+}
+.lift-bar[data-place='below'] {
+  top: calc(100% + 4px);
+}
+/* F13: the copy is the card itself with its tag strip opened to every tag, growing down over the cards below. */
+.lift-card.card {
+  height: auto;
+  grid-template-rows: 20px 20px 20px auto;
+}
+.lift-card.card[data-density='compact'] {
+  grid-template-rows: 20px 20px auto;
+}
+.lift-body {
+  display: contents;
+}
+.lift-tags {
+  grid-column: 1 / -1;
+  flex-wrap: wrap;
+  margin: 0;
+  pointer-events: auto;
+}
+.lift-bar .card-actions {
+  display: flex;
+  gap: 4px;
+}
+/* F14: solid accent buttons, so the actions stand out from whatever card sits behind them (light and dark). */
+.lift-bar .card-action {
+  height: 28px;
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 4px 12px rgb(20 24 38 / 0.25);
+}
+.lift-bar .card-action:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--accent) 82%, #000);
+}
+.lift-bar .card-action:disabled {
+  opacity: 0.6;
+}
+.lift-bar .card-action:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+.lift-bar .card-action-done {
+  background: var(--tag-ok-bg);
+  color: var(--tag-ok-fg);
+}
+.card-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 26px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: var(--ink);
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.card-action:hover:not(:disabled) {
+  background: var(--tag-muted-bg);
+}
+.card-action:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: -2px;
+}
+.card-action[aria-busy] {
+  cursor: progress;
+}
+.card-action-icon {
+  padding: 0 6px;
+}
+.card-action-done {
+  color: var(--tag-ok-fg);
+}
+/* Card removal (item 9): fade, then the list closes the gap. */
+.card[data-leaving] {
+  opacity: 0;
+  transition: opacity 120ms ease-in;
+  pointer-events: none;
+}
+
+/* ── Buttons shared by the drawer ─────────────────────────────────────────────────────────────────────── */
+.primary-button,
+.ghost-button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: 32px;
+  padding: 0 var(--space-3);
+  border-radius: 8px;
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+.primary-button {
+  border: 0;
+  background: var(--accent);
+  color: #fff;
+}
+.ghost-button {
+  border: 1px solid var(--line-strong);
+  background: var(--card-bg);
+  color: var(--ink);
+}
+.ghost-button:hover:not(:disabled) {
+  background: var(--tag-muted-bg);
+}
+.ghost-button[aria-pressed='true'] {
+  border-color: var(--accent);
+}
+.primary-button:focus-visible,
+.ghost-button:focus-visible,
+.text-button:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+.text-button-danger {
+  color: var(--tag-danger-fg);
+}
+
+/* ── Toasts (item 9: slide up, 180 ms) ─────────────────────────────────────────────────────────────────── */
+.toaster {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  z-index: 60;
+  display: grid;
+  gap: var(--space-2);
+  width: min(440px, calc(100vw - 32px));
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+.toast {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-2) var(--space-2) var(--space-3);
+  border-radius: 10px;
+  background: #1e2230;
+  border: 1px solid rgb(255 255 255 / 0.12); /* still a visible edge on the dark sheet */
+  color: #f4f6fb;
+  font-size: 0.8125rem;
+  box-shadow: 0 8px 24px rgb(30 34 48 / 0.25);
+  pointer-events: auto;
+  animation: toast-in 180ms ease-out;
+}
+.toast[data-tone='error'] {
+  background: #7a1c13;
+}
+.toast > span {
+  flex: 1;
+}
+.toast-action {
+  flex: none;
+  color: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+}
+.toast-close {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: inherit;
+}
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+html[data-motion='reduced'] .toast {
+  animation: fade-in 100ms ease-out;
+}
+html[data-motion='off'] .toast,
+html[data-motion='off'] .card[data-leaving] {
+  animation: none;
+  transition: none;
+}
+
+/* ── Selection, card menu, selection bar (task 9: FR-UI-027–029, item 8) ─────────────────────────────────── */
+/* Selected: an accent outline plus a check circle (a shape, not colour alone). Never changes the card's size. */
+.card[data-selected] {
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
+  background: color-mix(in srgb, var(--accent) 6%, var(--card-bg));
+}
+.card[data-selected]::before {
+  content: '';
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--accent)
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4.5 8.2l2.2 2.2 4.8-4.8' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
+    center / 14px no-repeat;
+}
+.card-menu {
+  display: grid;
+  min-width: 232px;
+  padding: var(--space-1);
+}
+.menu-label {
+  flex: 1;
+}
+.menu-keys {
+  color: var(--ink-muted);
+  font: inherit;
+  font-size: 0.6875rem;
+}
+.menu-sep {
+  height: 1px;
+  margin: var(--space-1) 0;
+  border: 0;
+  background: var(--line);
+}
+.selection-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  height: 34px;
+  padding: 0 4px 0 var(--space-3);
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.8125rem;
+  animation: fade-in var(--dur-menu) ease-out;
+}
+.selection-count {
+  margin-right: var(--space-2);
+  font-weight: 650;
+  white-space: nowrap;
+}
+.selection-action,
+.selection-clear {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 26px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: rgb(255 255 255 / 0.16);
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+}
+.selection-action:hover:not(:disabled),
+.selection-clear:hover {
+  background: rgb(255 255 255 / 0.28);
+}
+.selection-action:disabled {
+  opacity: 0.6;
+}
+.selection-clear {
+  width: 26px;
+  padding: 0;
+  justify-content: center;
+}
+.selection-action:focus-visible,
+.selection-clear:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 1px;
+}
+
+/* Projects on a card (FR-UI-017, item 5): a split dot, 10 px, 12 px when split; a numbered ring from 5 projects. */
+.project-split {
+  display: inline-block;
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+.project-split[data-split] {
+  width: 12px;
+  height: 12px;
+}
+.project-ring {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 14px;
+  height: 14px;
+  border: 1.5px solid currentColor;
+  border-radius: 50%;
+  font-size: 0.5625rem;
+  line-height: 1;
+}
+.tag[data-kind='project'] {
+  max-width: 14ch;
+}
+.tag[data-kind='project'] > span:not(.sr-only):not(.project-split):not(.project-ring) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* The project picker (FR-UI-017): one row per project with its colour, emoji and an all / some / none mark. */
+.project-picker {
+  min-width: 220px;
+  max-height: min(360px, 70vh);
+  overflow-y: auto;
+}
+.project-dot {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+.project-check {
+  display: inline-flex;
+  width: 14px;
+  margin-left: auto;
+  color: var(--accent);
+}
+
+/* "Remind me" picker (FR-REM-002). */
+.remind-pick {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-2);
+}
+.remind-pick-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Undo window (item 9): shrinks from full width to nothing over UNDO_MS. */
+.toast {
+  position: relative;
+  overflow: hidden;
+}
+.toast-bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  background: var(--accent);
+  transform-origin: left;
+  animation: toast-bar linear forwards;
+}
+@keyframes toast-bar {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
+}
+html[data-motion='off'] .toast-bar {
+  animation: none;
+  opacity: 0.5;
+}
+
+/* "search: …" pill beside the Inbox title when one searched email is shown (19 Nov 2026). */
+.search-badge {
+  display: inline-flex;
+  flex: 1;
+  align-items: center;
+  min-width: 0;
+  max-width: 420px;
+  margin-left: var(--space-2);
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+.search-badge button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.8125rem;
+  cursor: pointer;
+}
+.search-badge-text {
+  flex: 1;
+  min-width: 0;
+}
+.search-badge-text span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.search-badge-clear {
+  border-left: 1px solid color-mix(in srgb, var(--accent) 40%, transparent) !important;
+}
+.col-tools[hidden] {
+  display: none;
+}

@@ -1,0 +1,8 @@
+Message-ID: <10@secep.example>
+From: attacker@evil.example
+To: bob@corp.example
+Subject: Urgent Invoice
+Date: Wed, 04 Nov 2026 14:00:00 +0000
+Content-Type: text/html; charset=utf-8
+
+<html><head><style>body{display:none}</style></head><body><script>alert(1)</script><iframe src="https://evil.example/frame"></iframe><img src="https://tracker.evil.example/px.png" onerror="alert(2)"><p onclick="steal()">Click <a href="javascript:alert(3)">bad</a> or <a href="data:text/html,hi">data</a> or <a href="https://phish.evil.example/login">Verify Account</a></p></body></html>

@@ -1,0 +1,199 @@
+/*
+ * Design tokens — the only file with literal colours, radii, shadows and timings.
+ * Contrast ratios (WCAG 2.x) are measured against the surface they sit on; AA = 4.5 text, 3.0 non-text.
+ */
+:root {
+  color-scheme: light;
+
+  /* Surfaces */
+  --page: #eceef6;
+  --card: #fafbff;
+
+  /* Text — the only text colours allowed on clay surfaces */
+  --ink: #1e2230;        /* 15.31 on card, 13.66 on page, ≥12.65 on every tray */
+  --ink-muted: #4a5068;  /* 7.70 on card, 6.87 on page, ≥6.36 on every tray */
+
+  /* Column trays, one pastel per email type */
+  --tray-task: #dde7ff;
+  --tray-info: #ddf2e4;
+  --tray-credentials: #ffe2d9;
+  --tray-meeting: #ece1ff;
+  --tray-approval: #fff0c9;
+
+  /* Urgency badges: dark same-hue text on pastel fill */
+  --urgency-low-bg: #e4e8f0;      --urgency-low-fg: #334155;      /* 8.43 */
+  --urgency-medium-bg: #fdf0c4;   --urgency-medium-fg: #713f12;   /* 7.61 */
+  --urgency-high-bg: #ffe3cc;     --urgency-high-fg: #9a3412;     /* 5.95 */
+  --urgency-critical-bg: #ffd9d9; --urgency-critical-fg: #991b1b; /* 6.40 */
+
+  /* Sentiment dots (non-text; the label carries the meaning) */
+  --sentiment-positive: #15803d;   /* 4.85 on card */
+  --sentiment-neutral: #64748b;    /* 4.60 */
+  --sentiment-negative: #b45309;   /* 4.86 */
+  --sentiment-frustrated: #b91c1c; /* 6.26 */
+
+  /* Masked-credential chip */
+  --masked-bg: #e8e4f3;
+  --masked-fg: #3b2f63; /* 9.49 */
+
+  --focus-ring: #3b5bdb; /* 5.48 on card */
+
+  /* Radii */
+  --radius-column: 36px;
+  --radius-card: 28px;
+  --radius-pill: 999px;
+
+  /* Clay depth tiers: page is flat, columns are inset trays, cards are raised */
+  --shadow-inset:
+    inset 6px 6px 14px rgb(30 34 48 / 0.08),
+    inset -6px -6px 14px rgb(255 255 255 / 0.7);
+  --shadow-raised:
+    8px 10px 22px rgb(30 34 48 / 0.12),
+    -6px -6px 16px rgb(255 255 255 / 0.85),
+    inset 2px 2px 4px rgb(255 255 255 / 0.9),
+    inset -3px -3px 6px rgb(30 34 48 / 0.06);
+  --border-clay: 1px solid transparent;
+
+  /* Spacing */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+
+  /* Motion — critically damped feel, no overshoot (apple-design §4) */
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --dur-press: 100ms;
+  --dur-settle: 300ms;
+  --dur-peek: 180ms;
+  --dur-fade: 100ms;
+
+  /* Floating sheet and frosted bars (FR-UI-001, FR-UI-005). Bar colours follow the wallpaper tone (html[data-tone]). */
+  --sheet-inset: 8px;
+  --sheet-radius: 12px;
+  --sidebar-w: 220px;
+  --sidebar-collapsed-w: 64px;
+  --topbar-h: 56px;
+  --bar-fill: rgb(250 251 255 / 0.62);
+  --bar-fill-unsettled: rgb(250 251 255 / 0.9); /* no blur yet while the sheet is moving */
+  /* Literal, not var(--ink): the bars follow the wallpaper tone (html[data-tone]), never the app theme. */
+  --bar-ink: #1e2230;
+  --bar-ink-muted: #4a5068;
+  --bar-hover: rgb(30 34 48 / 0.06);
+  --bar-active: rgb(255 255 255 / 0.75);
+  /* Cards and column widgets (items 3, 4, 6): 1 px borders and a faint tint instead of shadows. */
+  --tile-radius: 10px;
+  --line: rgb(30 34 48 / 0.12);
+  --line-strong: rgb(30 34 48 / 0.5); /* 3.15 on card-bg, 3.09 on col-bg: form control and dotted-chip edges */
+  --col-bg: #f2f4fa;
+  --card-bg: #ffffff;
+  --accent: #3b5bdb;           /* 5.67 on card-bg; white text on it 5.67 */
+  --accent-text: var(--accent); /* the accent used as text (links, "See all"); lighter in dark mode */
+  --fresh-tint: rgb(59 91 219 / 0.14);
+  /* Urgency marks (non-text, measured on card-bg; each urgency also has its own shape) */
+  --urg-critical: #c92a2a;     /* 5.46 */
+  --urg-high: #e8590c;         /* 3.58 */
+  --urg-medium: #b7791f;       /* 3.64 */
+  --urg-low: #868e96;          /* 3.32 */
+  /* Tags: dark same-hue text on a pastel fill */
+  --tag-danger-bg: #fdecea;  --tag-danger-fg: #a61b10;  /* 6.59 */
+  --tag-warn-bg: #fff1dc;    --tag-warn-fg: #7c430c;    /* 7.08 */
+  /* Project progress ring warnings (FR-UI-020); always with a text label too. */
+  --ring-amber: #e67700;     --ring-red: #c92a2a;
+  --tag-ok-bg: #e4f3e8;      --tag-ok-fg: #1b5e33;      /* 6.78 */
+  --tag-muted-bg: #eef0f5;   --tag-muted-fg: var(--ink-muted); /* 6.98 */
+  --skel: #e7eaf2;
+  --skel-shine: rgb(255 255 255 / 0.75);
+  --hover-intent: 150ms;       /* item 3 */
+  --dur-menu: 120ms;           /* item 9: menus and popovers */
+  --dur-fresh: 2s;             /* item 9: accent tint on cards brought in by the new pill */
+  --critical: #d9480f; /* the Critical dot also differs by shape (presence), never colour alone */
+  --glow: #ff7a3d;
+}
+
+/*
+ * Dark mode (proposals §16.6): html[data-theme] from ui_prefs.theme (Light, Dark, Auto = the system). It recolours the
+ * sheet, columns, cards, chips, drawer, popovers and tiles; the lock screen, wallpaper and frosted bars keep following
+ * the wallpaper (html[data-tone]). Ratios measured on the surface each sits on: card-bg #232838, col-bg #1b2030,
+ * sheet #161a25. Text ≥ 4.5 (AA); marks, edges and focus ≥ 3.0.
+ */
+html[data-theme='dark'] {
+  color-scheme: dark;
+  --page: #11141d;
+  --card: #161a25;               /* the sheet's content area */
+  --ink: #e9ecf5;                /* 12.42 on card-bg, 13.72 on col-bg, 14.71 on the sheet */
+  --ink-muted: #aeb5c8;          /* 7.15 on card-bg, 7.90 on col-bg, 6.12 on tag-muted */
+  --col-bg: #1b2030;
+  --card-bg: #232838;
+  --line: rgb(233 236 245 / 0.13);
+  --line-strong: rgb(233 236 245 / 0.42); /* 3.44 on card-bg, 3.56 on col-bg */
+  --accent: #3b5bdb;             /* fills: white text on it 5.67 */
+  --accent-text: #a3b6ff;        /* 7.47 on card-bg */
+  --focus-ring: #a3b6ff;         /* 7.47 */
+  --fresh-tint: rgb(163 182 255 / 0.16);
+  /* Urgency marks (non-text, on card-bg; each also has its own shape) */
+  --urg-critical: #ff6b6b;       /* 5.28 */
+  --urg-high: #ff922b;           /* 6.56 */
+  --urg-medium: #e8b931;         /* 7.97 */
+  --urg-low: #8d96aa;            /* 4.94 */
+  /* Tags: light same-hue text on a deep fill (security, due, status) */
+  --tag-danger-bg: #45222b;  --tag-danger-fg: #ffb4b4;  /* 8.20 */
+  --tag-warn-bg: #3f3018;    --tag-warn-fg: #ffd59e;    /* 9.27 */
+  --ring-amber: #ffa94d;     --ring-red: #ff8787;
+  --tag-ok-bg: #1b3a29;      --tag-ok-fg: #9be3b0;      /* 8.32 */
+  --tag-muted-bg: #2d3346;
+  --skel: #2b3142;
+  --skel-shine: rgb(255 255 255 / 0.06);
+  --critical: #ff8a5b;
+  --masked-bg: #352b4f;
+  --masked-fg: #d9cbff;          /* 8.66 */
+  --urgency-low-bg: #2b3142;      --urgency-low-fg: #cbd5e1;
+  --urgency-medium-bg: #3f3018;   --urgency-medium-fg: #ffe08a;
+  --urgency-high-bg: #43271a;     --urgency-high-fg: #ffc08a;
+  --urgency-critical-bg: #45222b; --urgency-critical-fg: #ffb4b4;
+  --sentiment-positive: #5bd98a;   /* 8.20 */
+  --sentiment-neutral: #a3adbf;    /* 6.48 */
+  --sentiment-negative: #ffae5c;   /* 8.00 */
+  --sentiment-frustrated: #ff7b7b; /* 5.85 */
+  --tray-task: #1f2a44;
+  --tray-info: #1d3328;
+  --tray-credentials: #3a2520;
+  --tray-meeting: #2c2444;
+  --tray-approval: #3a3119;
+}
+
+html[data-tone='dark'] {
+  --bar-fill: rgb(22 26 40 / 0.55);
+  --bar-fill-unsettled: rgb(22 26 40 / 0.88);
+  --bar-ink: #f4f6fb;
+  --bar-ink-muted: #c3c9da;
+  --bar-hover: rgb(255 255 255 / 0.08);
+  --bar-active: rgb(255 255 255 / 0.16);
+}
+
+/* Motion preference (FR-UI-032): html[data-motion] is set by the lock controller from ui_prefs + OS, with the most
+   reduction winning unless the user chose Full. Before it is set, follow the OS. */
+html[data-motion='reduced'],
+html[data-motion='off'] {
+  --dur-press: 0ms;
+  --dur-settle: 0ms;
+  --dur-peek: var(--dur-fade);
+}
+html[data-motion='off'] {
+  --dur-peek: 0ms;
+  --dur-fade: 0ms;
+}
+@media (prefers-reduced-motion: reduce) {
+  html:not([data-motion]) {
+    --dur-press: 0ms;
+    --dur-settle: 0ms;
+    --dur-peek: var(--dur-fade);
+  }
+}
+
+/* Soft shadows alone can be too faint; give every clay surface a real edge */
+@media (prefers-contrast: more) {
+  :root {
+    --border-clay: 1px solid var(--ink-muted); /* 7.70 on card */
+  }
+}

@@ -1,0 +1,499 @@
+/* Side drawer (FR-UI-011 layer 3; item 9: slide 24 px + fade, 200 ms; content behind dims slightly). Lazy chunk. */
+.drawer {
+  position: fixed;
+  inset: 8px 8px 8px auto;
+  width: min(560px, calc(100vw - 16px));
+  height: auto;
+  /* The UA caps a modal dialog at 100% - 2em - 6px; without max-width the phone layout wasn't full screen (F10). */
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--tile-radius);
+  background: var(--card-bg);
+  color: var(--ink);
+  font-size: 0.875rem;
+  animation: drawer-in 200ms ease-out;
+}
+.drawer::backdrop {
+  background: rgb(20 24 36 / 0.18);
+  animation: fade-in 200ms ease-out;
+}
+@keyframes drawer-in {
+  from {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+}
+html[data-motion='reduced'] .drawer {
+  animation: fade-in 100ms ease-out;
+}
+html[data-motion='off'] .drawer,
+html[data-motion='off'] .drawer::backdrop {
+  animation: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  html:not([data-motion]) .drawer {
+    animation: fade-in 100ms ease-out;
+  }
+}
+/* Phone (src/lib/breakpoints.ts, ≤ 640 px): selected on <html data-device>, not a media query. */
+html[data-device='phone'] .drawer {
+  inset: 0;
+  width: 100%;
+  border: 0;
+  border-radius: 0;
+}
+
+
+.link-ready {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin-top: var(--space-1);
+  font-size: 0.8125rem;
+}
+
+.drawer-inner {
+  height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: var(--space-4);
+}
+.drawer-head {
+  display: grid;
+  gap: var(--space-2);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--line);
+}
+.drawer-head-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.drawer-from {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+  color: var(--ink-muted);
+  font-size: 0.8125rem;
+}
+.drawer-from > span:first-child {
+  color: var(--ink);
+  font-weight: 600;
+}
+.drawer-close {
+  margin-left: auto;
+  color: var(--ink);
+}
+.drawer-title {
+  font-size: 1.0625rem;
+  font-weight: 650;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+.drawer-tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.drawer-flag {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: 8px;
+  background: var(--tag-danger-bg);
+  color: var(--tag-danger-fg);
+  font-weight: 600;
+}
+.drawer-state {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.drawer-section {
+  border-bottom: 1px solid var(--line);
+}
+.drawer-section > summary {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  cursor: pointer;
+  list-style-position: inside;
+}
+.drawer-section > summary h3 {
+  display: inline;
+  font-size: 0.875rem;
+  font-weight: 650;
+}
+.drawer-section-body {
+  display: grid;
+  gap: var(--space-3);
+  padding-bottom: var(--space-4);
+}
+.drawer-sub {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--ink-muted);
+}
+.drawer-muted {
+  color: var(--ink-muted);
+  font-size: 0.8125rem;
+}
+.drawer-summary {
+  line-height: 1.5;
+}
+.drawer-body summary {
+  cursor: pointer;
+  color: var(--accent-text);
+  font-weight: 600;
+}
+.drawer-body-text {
+  margin-top: var(--space-2);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  line-height: 1.5;
+}
+
+.labels,
+.people {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0;
+}
+.labels > div,
+.people > div {
+  display: grid;
+  grid-template-columns: 6.5em minmax(0, 1fr);
+  gap: var(--space-2);
+  align-items: center;
+}
+.labels dt,
+.people dt {
+  color: var(--ink-muted);
+  font-size: 0.8125rem;
+}
+.labels dd,
+.people dd {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.labels-source {
+  margin-top: var(--space-1);
+}
+
+.thread {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.thread li {
+  display: grid;
+  grid-template-columns: minmax(0, 9em) minmax(0, 1fr) auto;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-2);
+  border-radius: 6px;
+  font-size: 0.8125rem;
+}
+.thread li[aria-current] {
+  background: var(--tag-muted-bg);
+  font-weight: 600;
+}
+.thread-from,
+.thread-subject {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.thread time {
+  color: var(--ink-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Actions (item 10) ───────────────────────────────────────────────────────────────────────────────────── */
+.actions,
+.action-list {
+  display: grid;
+  gap: var(--space-2);
+}
+.action-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.action {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.action-head {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+.action-text {
+  flex: 1;
+  min-width: 0;
+}
+.action-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.action-meta {
+  color: var(--ink-muted);
+  font-size: 0.8125rem;
+}
+.action-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex: none;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  background: var(--tag-muted-bg);
+  color: var(--tag-muted-fg);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.action-status[data-tone='ok'] { background: var(--tag-ok-bg); color: var(--tag-ok-fg); }
+.action-status[data-tone='error'] { background: var(--tag-danger-bg); color: var(--tag-danger-fg); }
+.action-status[data-tone='busy'] { background: var(--tag-warn-bg); color: var(--tag-warn-fg); }
+.action-error {
+  color: var(--tag-danger-fg);
+  font-size: 0.8125rem;
+}
+.action-buttons,
+.action-new {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+/* "⚡ Jira" becomes "✓ ATL-142": the check is drawn by its SVG stroke (item 9, 250 ms). */
+.check-draw path {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 100;
+  animation: check-draw 250ms ease-out;
+}
+@keyframes check-draw {
+  from {
+    stroke-dashoffset: 100;
+  }
+}
+html[data-motion='reduced'] .check-draw path,
+html[data-motion='off'] .check-draw path {
+  animation: none;
+}
+
+.composer {
+  display: grid;
+  gap: var(--space-2);
+}
+.composer-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: var(--space-2);
+}
+.composer-field {
+  display: grid;
+  gap: 2px;
+}
+.composer-field label {
+  color: var(--ink-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.composer-field input,
+.composer-field select,
+.composer-field textarea {
+  min-height: 32px;
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--line-strong);
+  border-radius: 6px;
+  background: var(--card-bg);
+  color: var(--ink);
+  font: inherit;
+}
+.composer-field [aria-invalid='true'] {
+  border-color: var(--tag-danger-fg);
+}
+.composer-error {
+  color: var(--tag-danger-fg);
+  font-size: 0.75rem;
+}
+.composer-note {
+  color: var(--ink-muted);
+  font-size: 0.75rem;
+}
+.composer-foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+/* ── Links & security (FR-SEC-004) ──────────────────────────────────────────────────────────────────────── */
+.auth {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.auth-item {
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: var(--tag-danger-bg);
+  color: var(--tag-danger-fg);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.auth-item[data-pass] {
+  background: var(--tag-ok-bg);
+  color: var(--tag-ok-fg);
+}
+.link-list {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.link {
+  display: grid;
+  gap: var(--space-2);
+}
+.link-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.link-verdict {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex: none;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: var(--tag-muted-bg);
+  color: var(--tag-muted-fg);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.link[data-verdict='clean'] .link-verdict { background: var(--tag-ok-bg); color: var(--tag-ok-fg); }
+.link[data-verdict='suspicious'] .link-verdict { background: var(--tag-warn-bg); color: var(--tag-warn-fg); }
+.link[data-verdict='malicious'] .link-verdict { background: var(--tag-danger-bg); color: var(--tag-danger-fg); }
+.link-text {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+}
+.link-anchor,
+.link-host {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.link-host {
+  color: var(--ink-muted);
+  font-size: 0.75rem;
+}
+.link-warning {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border-radius: 8px;
+  background: var(--tag-warn-bg);
+  color: var(--tag-warn-fg);
+}
+.link-warning[data-blocked] {
+  background: var(--tag-danger-bg);
+  color: var(--tag-danger-fg);
+}
+.link-warning-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-weight: 650;
+}
+.link-final,
+.link-chain {
+  overflow-wrap: anywhere;
+  font-family: ui-monospace, monospace;
+  font-size: 0.75rem;
+}
+.link-chain {
+  margin: 0;
+  padding-left: 1.25rem;
+}
+
+.attachments {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.attachments li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+.attachment-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Credentials (FR-SEC-007, QA pass 5): only their type; the value is never in SECEP. "Open in Gmail" shows it. */
+.secrets {
+  display: grid;
+  gap: var(--space-2);
+  margin: var(--space-2) 0 0;
+  padding: 0;
+  list-style: none;
+}
+.secret {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.secret-type {
+  font-weight: 600;
+}
+.secret-mask {
+  margin-left: auto;
+  color: var(--ink-muted);
+  letter-spacing: 1px;
+}
+.secret-open {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: var(--space-2);
+}
+.secret-note {
+  margin: var(--space-2) 0 0;
+  color: var(--ink-muted);
+  font-size: 0.8125rem;
+}

@@ -1,0 +1,8 @@
+Message-ID: <24@secep.example>
+From: sender24@corp.example
+To: bob@corp.example
+Subject: [Approval] Approve PR #412
+Date: Wed, 04 Nov 2026 16:02:00 +0000
+Content-Type: text/plain; charset=utf-8
+
+Please approve PR #412 for the ingestion service.

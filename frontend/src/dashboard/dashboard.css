@@ -1,0 +1,873 @@
+/* Paged dashboard (FR-UI-006–010, item 2). Lazy chunk with the Dashboard route. Motion: transform and opacity only. */
+.dash {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: var(--space-3);
+  height: 100%;
+  min-height: 0;
+  /* A sideways swipe changes pages and never triggers browser Back (FR-UI-007). html and body too: Chrome on a
+     Windows precision touchpad navigates on the root scroller otherwise (QA pass 3). */
+  overscroll-behavior-x: none;
+}
+/* Getting started (onboarding §29.2) sits above the page bar when shown. */
+.dash:has(> .checklist) {
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+}
+.dash > .checklist {
+  margin: 0;
+}
+html:has(.dash),
+html:has(.dash) body {
+  overscroll-behavior-x: none;
+}
+.dash-loading {
+  min-height: 60vh;
+}
+
+/* ── Top bar: page name, save state, edit ─────────────────────────────────────────────────────────────── */
+.dash-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+.dash-title {
+  font-size: 1rem;
+  font-weight: 650;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.dash-page-tools {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-width: 0;
+}
+.dash-page-name {
+  width: 14em;
+  max-width: 40vw;
+  height: 30px;
+  padding: 0 var(--space-2);
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: var(--card-bg);
+  color: var(--ink);
+  font: inherit;
+  font-weight: 600;
+}
+.dash-save {
+  margin-left: auto;
+  color: var(--ink-muted);
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+.dash-save[data-state='error'] {
+  color: var(--tag-danger-fg);
+  font-weight: 600;
+}
+
+/* ── Pages: only the active one renders; it slides in from the side it came from ───────────────────────── */
+.dash-pages {
+  position: relative;
+  min-height: 0;
+  overflow: hidden;
+  overscroll-behavior-x: none;
+  touch-action: pan-y;
+}
+.dash-page {
+  height: 100%;
+  min-height: 0;
+  animation: page-in 200ms ease-out;
+}
+.dash-page[data-direction='-1'] {
+  animation-name: page-in-left;
+}
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translateX(32px);
+  }
+}
+@keyframes page-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-32px);
+  }
+}
+html[data-motion='reduced'] .dash-page {
+  animation: page-fade 100ms ease-out;
+}
+html[data-motion='off'] .dash-page {
+  animation: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  html:not([data-motion]) .dash-page {
+    animation: page-fade 100ms ease-out;
+  }
+}
+@keyframes page-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+/* ── Desktop and tablet: tiles in order, filling rows of 3 slots (proposals §16.3) ────────────────────────
+   CSS grid sparse auto-placement is the flow: a tile that doesn't fit the rest of a row starts the next one. Rows
+   share the page height and are as tall as their tallest tile; more rows than fit scroll the page. */
+.flow-page {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-auto-rows: minmax(var(--tile-row-min, 300px), 1fr);
+  grid-auto-flow: row;
+  gap: var(--space-3);
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  /* Room for the edit-mode wobble, so it never overflows into a scrollbar that would narrow the tiles. */
+  padding: 3px;
+}
+.flow-slot {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr);
+  gap: var(--space-3);
+  min-width: 0;
+  min-height: 0;
+}
+/* F18: two widgets in one slot, always equal halves. */
+.flow-slot[data-stacked] {
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+}
+.flow-tile {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+}
+.flow-slot[data-size='small'] { grid-column: span 1; }
+.flow-slot[data-size='medium'] { grid-column: span 2; }
+.flow-slot[data-size='large'] { grid-column: span 3; }
+/* Drop target for stacking: the lower half of the tile under the pointer. */
+.stack-hint {
+  position: absolute;
+  inset: 50% 0 0;
+  display: grid;
+  place-items: center;
+  border: 2px dashed var(--accent);
+  border-radius: var(--tile-radius);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--accent-text);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  pointer-events: none;
+}
+/* The tile being dragged stays in its new place, faded; a light copy follows the pointer. */
+.flow-tile[data-dragging] {
+  opacity: 0.35;
+}
+.tile-drag {
+  --swatch: var(--line-strong);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  height: 100%;
+  padding: var(--space-3);
+  border: 1px solid var(--line-strong);
+  border-left: 3px solid var(--swatch);
+  border-radius: var(--tile-radius);
+  background: var(--card-bg);
+  box-shadow: 0 12px 32px rgb(0 0 0 / 0.18);
+  font-weight: 600;
+  align-content: start;
+  align-items: start;
+  cursor: grabbing;
+}
+/* No text selection while a tile is dragged (QA pass 3). */
+html[data-dragging],
+html[data-dragging] * {
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: grabbing;
+}
+
+/* ── Widget frame: colour tints the title bar and draws a thin left stripe (FR-UI-008) ─────────────────── */
+.widget {
+  --swatch: transparent;
+  position: relative;
+  height: 100%;
+  min-height: 0;
+}
+.widget > .column {
+  max-width: none;
+  overflow: hidden;
+}
+.widget[data-swatch] > .column {
+  border-left: 3px solid var(--swatch);
+}
+.widget[data-swatch] .col-head {
+  background: color-mix(in srgb, var(--swatch) 9%, transparent);
+}
+.widget[data-swatch='slate'], .tile-drag[data-swatch='slate'] { --swatch: #5c677d; }
+.widget[data-swatch='blue'], .tile-drag[data-swatch='blue'] { --swatch: #3b5bdb; }
+.widget[data-swatch='teal'], .tile-drag[data-swatch='teal'] { --swatch: #0c8599; }
+.widget[data-swatch='green'], .tile-drag[data-swatch='green'] { --swatch: #2b8a3e; }
+.widget[data-swatch='amber'], .tile-drag[data-swatch='amber'] { --swatch: #e09f00; }
+.widget[data-swatch='orange'], .tile-drag[data-swatch='orange'] { --swatch: #e8590c; }
+.widget[data-swatch='red'], .tile-drag[data-swatch='red'] { --swatch: #e03131; }
+.widget[data-swatch='violet'], .tile-drag[data-swatch='violet'] { --swatch: #7048e8; }
+
+.widget-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+  flex: 1 1 auto;
+}
+.widget-icon {
+  flex: none;
+  font-size: 1rem;
+  line-height: 1;
+}
+.widget-title {
+  min-width: 0;
+}
+.widget-rename {
+  min-width: 0;
+  flex: 1;
+  height: 28px;
+  padding: 0 var(--space-2);
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  background: var(--card-bg);
+  color: var(--ink);
+  font: inherit;
+  font-weight: 600;
+}
+.widget-tools {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+.widget-placeholder .col-state {
+  padding: var(--space-4);
+}
+
+/* Edit mode (iOS jiggle, item 2): tiles move by their title bar. The wobble is a small rotation (transform only),
+   off under reduced motion. */
+.dash[data-editing] .widget-bar {
+  cursor: grab;
+}
+.dash[data-editing] .widget > .column {
+  outline: 1px dashed var(--line-strong);
+  outline-offset: 2px;
+  animation: jiggle 260ms ease-in-out infinite alternate;
+}
+.dash[data-editing] .flow-tile:nth-child(2n) .widget > .column {
+  animation-delay: -130ms;
+}
+@keyframes jiggle {
+  from {
+    transform: rotate(-0.25deg);
+  }
+  to {
+    transform: rotate(0.25deg);
+  }
+}
+html[data-motion='reduced'] .dash[data-editing] .widget > .column,
+html[data-motion='off'] .dash[data-editing] .widget > .column {
+  animation: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  html:not([data-motion]) .dash[data-editing] .widget > .column {
+    animation: none;
+  }
+}
+
+/* ── Widget menu ───────────────────────────────────────────────────────────────────────────────────────── */
+.widget-menu {
+  width: 272px;
+  display: grid;
+  gap: var(--space-2);
+}
+.menu-group {
+  display: grid;
+  gap: var(--space-1);
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
+.menu-group legend {
+  color: var(--ink-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-bottom: var(--space-1);
+}
+.swatches {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 2px;
+}
+.swatch,
+.size-choice,
+.icon-choice {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 6px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: none;
+  color: var(--ink);
+  font-size: 0.75rem;
+}
+.swatch {
+  justify-content: flex-start;
+}
+.swatch:hover,
+.size-choice:hover,
+.icon-choice:hover {
+  background: var(--tag-muted-bg);
+}
+.swatch[aria-pressed='true'],
+.size-choice[aria-pressed='true'],
+.icon-choice[aria-pressed='true'] {
+  border-color: var(--accent);
+  font-weight: 650;
+}
+.swatch-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1px solid var(--line-strong);
+  background: var(--swatch, transparent);
+}
+.swatch[data-swatch='slate'] { --swatch: #5c677d; }
+.swatch[data-swatch='blue'] { --swatch: #3b5bdb; }
+.swatch[data-swatch='teal'] { --swatch: #0c8599; }
+.swatch[data-swatch='green'] { --swatch: #2b8a3e; }
+.swatch[data-swatch='amber'] { --swatch: #e09f00; }
+.swatch[data-swatch='orange'] { --swatch: #e8590c; }
+.swatch[data-swatch='red'] { --swatch: #e03131; }
+.swatch[data-swatch='violet'] { --swatch: #7048e8; }
+.icon-grid {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 2px;
+}
+.icon-choice {
+  padding: 0;
+  font-size: 1rem;
+}
+.size-choices {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 2px;
+}
+.picker-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+.picker-label {
+  color: var(--ink-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.picker-current {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 8px;
+  border: 1px solid var(--line-strong);
+  border-radius: 6px;
+  background: var(--card-bg);
+  color: var(--ink);
+  font-size: 0.75rem;
+}
+.picker-current:hover {
+  background: var(--tag-muted-bg);
+}
+.picker-current:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+.picker-emoji {
+  font-size: 1rem;
+  line-height: 1;
+}
+.picker-menu {
+  width: 260px;
+}
+.swatch-dot[data-swatch='slate'] { --swatch: #5c677d; }
+.swatch-dot[data-swatch='blue'] { --swatch: #3b5bdb; }
+.swatch-dot[data-swatch='teal'] { --swatch: #0c8599; }
+.swatch-dot[data-swatch='green'] { --swatch: #2b8a3e; }
+.swatch-dot[data-swatch='amber'] { --swatch: #e09f00; }
+.swatch-dot[data-swatch='orange'] { --swatch: #e8590c; }
+.swatch-dot[data-swatch='red'] { --swatch: #e03131; }
+.swatch-dot[data-swatch='violet'] { --swatch: #7048e8; }
+.widget-menu .quick-chips {
+  flex-wrap: wrap;
+}
+.menu-note {
+  color: var(--ink-muted);
+  font-size: 0.75rem;
+}
+.menu-item-danger {
+  color: var(--tag-danger-fg);
+}
+
+/* ── Page dots: hover shows every page's name as a pill above its dot (FR-UI-007) ─────────────────────── */
+.page-dots {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2px;
+  min-height: 28px;
+}
+.page-dot {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: var(--ink-muted);
+}
+.page-dot .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 1.5px solid var(--ink-muted);
+}
+/* The current page is a filled dot (shape, not colour alone). */
+.page-dot[aria-current='page'] .dot {
+  background: var(--ink);
+  border-color: var(--ink);
+}
+/* Every page name, side by side in order, above the dots (QA pass 3: one pill per dot overlapped). */
+.page-pills {
+  position: absolute;
+  bottom: calc(100% + 2px);
+  left: 50%;
+  display: flex;
+  gap: var(--space-1);
+  max-width: calc(100vw - 32px);
+  padding-bottom: 2px;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, 4px);
+  transition:
+    opacity var(--dur-fade) ease-in,
+    transform var(--dur-fade) ease-in;
+}
+.page-dots:hover .page-pills,
+.page-dots:focus-within .page-pills {
+  pointer-events: auto;
+  opacity: 1;
+  transform: translate(-50%, 0);
+  transition:
+    opacity var(--dur-menu) ease-out var(--hover-intent),
+    transform var(--dur-menu) ease-out var(--hover-intent);
+}
+.dot-pill {
+  flex: 0 1 auto;
+  min-width: 0;
+  padding: 2px 8px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  background: var(--card-bg);
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+/* The current page: a heavier border and a dot before the name (shape, not colour alone). */
+.dot-pill[data-current] {
+  border-color: var(--ink);
+}
+.dot-pill[data-current]::before {
+  content: '● ';
+}
+.page-dot:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 1px;
+}
+.page-add {
+  border: 1px dashed var(--line-strong);
+  width: 20px;
+  height: 20px;
+  margin-left: var(--space-1);
+}
+.page-add:disabled {
+  opacity: 0.4;
+}
+
+/* ── Gallery ───────────────────────────────────────────────────────────────────────────────────────────── */
+.gallery {
+  width: min(720px, calc(100vw - 32px));
+  max-height: min(80vh, 720px);
+  padding: var(--space-4);
+  border: 1px solid var(--line);
+  border-radius: var(--tile-radius);
+  background: var(--card-bg);
+  color: var(--ink);
+  font-size: 0.875rem;
+}
+.gallery::backdrop {
+  background: rgb(20 24 36 / 0.18);
+}
+.gallery-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-2);
+}
+.gallery-head h2 {
+  font-size: 1rem;
+}
+.gallery-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+  list-style: none;
+  padding: 0;
+}
+.gallery-item {
+  display: grid;
+  gap: var(--space-2);
+  width: 100%;
+  height: 100%;
+  padding: var(--space-3);
+  border: 1px solid var(--line);
+  border-radius: var(--tile-radius);
+  background: var(--col-bg);
+  color: var(--ink);
+  text-align: left;
+}
+.gallery-item:hover {
+  border-color: var(--accent);
+}
+.gallery-item:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+.gallery-item-head {
+  font-weight: 650;
+}
+.gallery-preview {
+  display: grid;
+  gap: 2px;
+  min-height: 3.6em;
+  font-size: 0.75rem;
+}
+.gallery-preview-line {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--ink-muted);
+}
+
+/* ── Phone (proposals §16.4, option A) ─────────────────────────────────────────────────────────────────────
+   One slim header row (page switcher + Edit), then the page's widgets as sections in one vertical scroll. */
+html[data-device='phone'] .dash {
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: var(--space-2);
+  margin: calc(-1 * var(--space-2));
+}
+.phone-bar {
+  gap: var(--space-2);
+  min-height: 0;
+}
+/* Segmented control; the pressed page is filled and bold (not colour alone). Scrolls sideways if it must. */
+.page-switch {
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 0;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  background: var(--col-bg);
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+}
+.page-switch::-webkit-scrollbar {
+  display: none;
+}
+.page-seg {
+  flex: none;
+  min-height: 32px;
+  padding: 0 var(--space-3);
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: none;
+  color: var(--ink-muted);
+  font: inherit;
+  font-size: 0.8125rem;
+  white-space: nowrap;
+}
+.page-seg[aria-pressed='true'] {
+  background: var(--card-bg);
+  color: var(--ink);
+  font-weight: 700;
+  box-shadow: 0 1px 3px rgb(20 24 38 / 0.15);
+}
+.page-seg:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: -2px;
+}
+.page-seg-add {
+  display: grid;
+  place-items: center;
+  min-width: 32px;
+  padding: 0;
+}
+
+.phone-page {
+  display: grid;
+  align-content: start;
+  gap: var(--space-3);
+  height: 100%;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  padding-bottom: var(--space-3);
+}
+/* A section is as tall as its title row, three cards and "See all": nothing scrolls inside it. */
+.phone-section {
+  height: auto;
+}
+.phone-section .col-head {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+.section-pill {
+  position: static;
+  transform: none;
+  height: 26px;
+  margin-left: auto;
+}
+.section-cards {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+}
+.section-empty {
+  padding: var(--space-2) 0;
+}
+.section-all {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-1);
+  min-height: 40px;
+  padding: 0 var(--space-3) var(--space-2);
+  color: var(--accent-text);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+.section-all:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: -2px;
+}
+
+/* ── Phone edit sheet and the touch action menu: bottom sheets (native modal dialogs) ────────────────────── */
+.edit-sheet,
+.action-sheet {
+  position: fixed;
+  inset: auto 0 0;
+  width: 100%;
+  max-width: none;
+  max-height: 85vh;
+  margin: 0;
+  padding: var(--space-4) var(--space-4) calc(var(--space-4) + env(safe-area-inset-bottom));
+  border: 0;
+  border-radius: 16px 16px 0 0;
+  background: var(--card-bg);
+  color: var(--ink);
+  overflow-y: auto;
+  animation: sheet-up var(--dur-menu) ease-out;
+}
+.edit-sheet::backdrop,
+.action-sheet::backdrop {
+  background: rgb(10 12 20 / 0.4);
+}
+@keyframes sheet-up {
+  from {
+    transform: translateY(24px);
+    opacity: 0;
+  }
+}
+html[data-motion='reduced'] .edit-sheet,
+html[data-motion='reduced'] .action-sheet {
+  animation-name: page-fade;
+}
+html[data-motion='off'] .edit-sheet,
+html[data-motion='off'] .action-sheet {
+  animation: none;
+}
+.edit-sheet {
+  display: grid;
+  gap: var(--space-3);
+  align-content: start;
+}
+.edit-sheet:not([open]),
+.action-sheet:not([open]) {
+  display: none;
+}
+.edit-sheet-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.edit-sheet-head h2 {
+  margin-right: auto;
+  font-size: 1rem;
+}
+.edit-sheet-field {
+  display: grid;
+  gap: var(--space-1);
+  font-size: 0.8125rem;
+  color: var(--ink-muted);
+}
+.edit-sheet-sub {
+  font-size: 0.8125rem;
+  color: var(--ink-muted);
+}
+.edit-sheet-list {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.edit-sheet-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 48px;
+  padding: 0 var(--space-2);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--card-bg);
+}
+.edit-sheet-row[data-dragging] {
+  position: relative;
+  z-index: 1;
+  box-shadow: 0 8px 24px rgb(20 24 38 / 0.2);
+}
+.edit-sheet-row[data-hidden] .edit-sheet-name {
+  color: var(--ink-muted);
+  text-decoration: line-through;
+}
+.edit-sheet-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.drag-handle {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  background: none;
+  color: var(--ink-muted);
+  cursor: grab;
+  /* The handle drags; the rest of the sheet still scrolls. */
+  touch-action: none;
+}
+.drag-handle:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: -2px;
+}
+.switch {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: 40px;
+  font-size: 0.8125rem;
+}
+.switch input {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--accent);
+}
+.switch-text {
+  min-width: 4.5em;
+}
+.edit-sheet-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.danger-button {
+  color: var(--tag-danger-fg);
+}
+
+.action-sheet-title {
+  margin-bottom: var(--space-2);
+  color: var(--ink-muted);
+  font-size: 0.8125rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.action-sheet-list {
+  display: grid;
+}
+.action-sheet-item,
+.action-sheet-cancel {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: 48px;
+  padding: 0 var(--space-2);
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.9375rem;
+  text-align: left;
+}
+.action-sheet-done {
+  color: var(--tag-ok-fg);
+}
+.action-sheet-cancel {
+  justify-content: center;
+  margin-top: var(--space-2);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  font-weight: 600;
+}
+.action-sheet-item:focus-visible,
+.action-sheet-cancel:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: -2px;
+}
+
+/* An empty page: Add widget and Delete page side by side (19 Nov 2026). */
+.dash-empty-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-2);
+}

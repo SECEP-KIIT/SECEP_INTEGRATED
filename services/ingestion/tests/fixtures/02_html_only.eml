@@ -1,0 +1,8 @@
+Message-ID: <02@secep.example>
+From: Carol <carol@corp.example>
+To: bob@corp.example
+Subject: Q4 Budget Approval
+Date: Wed, 04 Nov 2026 10:00:00 +0000
+Content-Type: text/html; charset=utf-8
+
+<html><body><p>Please approve the Q4 budget:</p><ul><li>Cloud: $4,200</li><li>CI: $800</li></ul><p>Link: <a href="https://finance.corp.example/q4">Approve here</a></p></body></html>

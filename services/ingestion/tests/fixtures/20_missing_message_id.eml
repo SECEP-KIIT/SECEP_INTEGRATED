@@ -1,0 +1,6 @@
+From: alerts@corp.example
+To: bob@corp.example
+Subject: Disk usage alert
+Date: Wed, 04 Nov 2026 15:20:00 +0000
+
+Disk /var/lib/postgresql is at 82%.

@@ -1,0 +1,8 @@
+Message-ID: <34@secep.example>
+From: sender34@corp.example
+To: bob@corp.example
+Subject: [Info] Monthly uptime report
+Date: Wed, 04 Nov 2026 16:12:00 +0000
+Content-Type: text/plain; charset=utf-8
+
+99.98% availability across all regions.

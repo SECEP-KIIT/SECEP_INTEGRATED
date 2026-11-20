@@ -1,0 +1,28 @@
+Message-ID: <04@secep.example>
+From: Eve <eve@corp.example>
+To: bob@corp.example
+Cc: team@corp.example
+Subject: Architecture Spec PDF
+Date: Wed, 04 Nov 2026 12:00:00 +0000
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="mix04"
+
+--mix04
+Content-Type: multipart/alternative; boundary="inner04"
+
+--inner04
+Content-Type: text/plain; charset=utf-8
+
+Attached is the architecture spec.
+--inner04
+Content-Type: text/html; charset=utf-8
+
+<p>Attached is the architecture spec.</p>
+--inner04--
+--mix04
+Content-Type: application/pdf; name="spec.pdf"
+Content-Disposition: attachment; filename="spec.pdf"
+Content-Transfer-Encoding: base64
+
+JVBERi0xLjQKJWZha2UtcGRmLWNvbnRlbnQtZm9yLXNlY2VwLXRlc3QK
+--mix04--

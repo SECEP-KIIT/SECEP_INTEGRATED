@@ -1,0 +1,8 @@
+Message-ID: <38@secep.example>
+From: sender38@corp.example
+To: bob@corp.example
+Subject: [Task] Document Redis stream schema
+Date: Wed, 04 Nov 2026 16:16:00 +0000
+Content-Type: text/plain; charset=utf-8
+
+Confirm envelope.v1 fields with M3 and M5.

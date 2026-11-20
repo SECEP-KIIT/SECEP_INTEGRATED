@@ -1,0 +1,8 @@
+Message-ID: <09@secep.example>
+From: legacy@corp.example
+To: bob@corp.example
+Subject: Legacy encoding
+Date: Wed, 04 Nov 2026 13:45:00 +0000
+Content-Type: text/plain; charset=x-bogus-999
+
+Fallback text with latin1 é and cp1252 “quotes”.

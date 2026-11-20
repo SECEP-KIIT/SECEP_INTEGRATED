@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "envelope.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "email_id", "tenant_id", "mailbox_id", "user_id", "thread_id", "received_at", "has_urls"],
+  "properties": {
+    "schema": { "const": "envelope.v1" },
+    "email_id": { "type": "string", "format": "uuid" },
+    "tenant_id": { "type": "string", "format": "uuid" },
+    "mailbox_id": { "type": "string", "format": "uuid" },
+    "user_id": { "type": "string", "format": "uuid" },
+    "thread_id": { "type": "string", "format": "uuid" },
+    "received_at": { "type": "string", "format": "date-time" },
+    "has_urls": { "type": "boolean" }
+  }
+}

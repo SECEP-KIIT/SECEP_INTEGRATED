@@ -1,0 +1,16 @@
+node_modules/
+dist/
+build/
+.env
+.env.*
+!.env.example
+secrets/
+__pycache__/
+*.pyc
+venv/
+.venv/
+.vscode/
+*.log
+.claude/settings.local.json
+# M6 uploads (FILES_DIR default)
+backend/data/

@@ -1,0 +1,10 @@
+Message-ID: <01@secep.example>
+From: Alice <alice@corp.example>
+To: Bob <bob@corp.example>
+Subject: Weekly standup notes
+Date: Wed, 04 Nov 2026 09:12:31 +0000
+Authentication-Results: mx.google.com; spf=pass; dkim=pass; dmarc=pass
+Content-Type: text/plain; charset=utf-8
+
+Hi Bob,
+Please review https://jira.corp.example/browse/SEC-42 before 3pm.

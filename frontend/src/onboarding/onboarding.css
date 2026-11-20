@@ -1,0 +1,257 @@
+/* First-run help (proposals §29). The tour sits above the app (sheet z 10) and below the lock (z 30). */
+.tour {
+  position: fixed;
+  inset: 0;
+  z-index: 26;
+  pointer-events: none;
+}
+.tour[data-placed='center'] {
+  background: rgb(0 0 0 / 0.35);
+}
+.tour-spot {
+  position: fixed;
+  top: 0;
+  left: 0;
+  border-radius: 12px;
+  box-shadow: 0 0 0 9999px rgb(0 0 0 / 0.38);
+  outline: 2px solid var(--accent);
+  animation: tour-fade 0.2s ease-out;
+}
+.tour-card,
+.tour-offer,
+.hint {
+  pointer-events: auto;
+  color: var(--ink, inherit);
+  background: var(--card-bg);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  box-shadow: 0 12px 32px rgb(0 0 0 / 0.22);
+}
+.tour-card {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 340px;
+  padding: 14px 16px 12px;
+  animation: tour-fade 0.2s ease-out;
+}
+.tour-card:focus {
+  outline: none;
+}
+.tour[data-placed='center'] .tour-card {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+.tour[data-placed='corner'] .tour-card {
+  top: auto;
+  right: 28px;
+  bottom: 28px;
+  left: auto;
+}
+.tour[data-placed='bottom'] .tour-card,
+.tour-offer {
+  top: auto;
+  left: auto;
+}
+.tour[data-placed='bottom'] .tour-card {
+  right: 8px;
+  bottom: calc(8px + env(safe-area-inset-bottom));
+  left: 8px;
+  width: auto;
+}
+.tour-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.tour-count {
+  color: var(--ink-muted, inherit);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.tour-card h2,
+.tour-offer h2 {
+  margin: 2px 0 6px;
+  font-size: 1.05rem;
+}
+.tour-card p,
+.tour-offer p {
+  margin: 0 0 10px;
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+.tour-card kbd {
+  padding: 0 5px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  font: 600 0.8rem/1.4 inherit;
+}
+.tour-later {
+  color: var(--ink-muted, inherit);
+  font-size: 0.8rem !important;
+}
+.tour-setting {
+  display: grid;
+  gap: 8px;
+  margin: 0 0 10px;
+  padding: 10px;
+  border-radius: 10px;
+  background: var(--col-bg);
+  font-size: 0.875rem;
+}
+.tour-setting label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.tour-setting select {
+  padding: 3px 6px;
+  border: 1px solid var(--line-strong);
+  border-radius: 6px;
+  background: var(--card-bg);
+  color: inherit;
+  font: inherit;
+}
+.tour-buttons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.tour-spacer {
+  flex: 1;
+}
+.tour-offer {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 26;
+  width: min(360px, calc(100vw - 16px));
+  padding: 16px;
+  animation: tour-fade 0.25s ease-out;
+}
+@media (max-width: 640px) {
+  .tour-offer {
+    right: 8px;
+    bottom: calc(72px + env(safe-area-inset-bottom));
+  }
+}
+
+/* Getting started (Home). */
+.checklist {
+  margin: 0 0 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--tile-radius);
+  background: var(--card-bg);
+}
+.checklist header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.checklist h2 {
+  margin: 0;
+  font-size: 0.95rem;
+}
+.checklist-count {
+  color: var(--ink-muted, inherit);
+  font-size: 0.8rem;
+}
+.checklist-bar {
+  flex: 1;
+  height: 4px;
+  overflow: hidden;
+  border-radius: 2px;
+  background: var(--line);
+}
+.checklist-bar span {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  transform-origin: left;
+  transition: transform 0.3s ease-out;
+}
+.checklist ul {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 4px 16px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.checklist li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 30px;
+  font-size: 0.875rem;
+}
+.checklist-mark {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border: 1.5px solid var(--line-strong);
+  border-radius: 50%;
+}
+.checklist li[data-done] .checklist-mark {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+}
+.checklist li[data-done] .checklist-label {
+  color: var(--ink-muted, inherit);
+  text-decoration: line-through;
+}
+.checklist-label {
+  flex: 1;
+}
+.checklist header .icon-button,
+.tour-head .icon-button {
+  color: var(--ink-muted);
+}
+
+/* First-use hint bubble. */
+.hint {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 26;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  max-width: 290px;
+  padding: 10px 12px;
+  font-size: 0.85rem;
+  animation: tour-fade 0.25s ease-out;
+}
+.hint p {
+  margin: 0;
+  line-height: 1.4;
+}
+.hint kbd {
+  padding: 0 4px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  font: 600 0.8rem/1.4 inherit;
+}
+.hint svg {
+  flex: none;
+  margin-top: 2px;
+  color: var(--urg-medium);
+}
+
+@keyframes tour-fade {
+  from {
+    opacity: 0;
+  }
+}
+html[data-motion='reduced'] :is(.tour-spot, .tour-card, .tour-offer, .hint),
+html[data-motion='off'] :is(.tour-spot, .tour-card, .tour-offer, .hint, .checklist-bar span) {
+  animation: none;
+  transition: none;
+}

@@ -1,0 +1,212 @@
+/* Projects (FR-UI-016/020, task 10): the create/edit dialog and the project view. */
+.project-dialog {
+  width: min(560px, calc(100vw - 32px));
+  padding: var(--space-4);
+  border: 1px solid var(--line);
+  border-radius: var(--tile-radius);
+  background: var(--card-bg);
+  color: var(--ink);
+  font-size: 0.875rem;
+}
+.project-dialog::backdrop {
+  background: rgb(20 24 36 / 0.18);
+}
+.project-dialog form {
+  display: grid;
+  gap: var(--space-3);
+}
+.project-dialog h2 {
+  margin: 0;
+  font-size: 1rem;
+}
+.pd-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: var(--space-2);
+}
+.pd-row:first-of-type {
+  grid-template-columns: 80px 1fr;
+}
+.pd-field {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.pd-field > label,
+.pd-field legend {
+  padding: 0;
+  color: var(--ink-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.pd-field input,
+.pd-field textarea {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  min-height: 32px;
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--line-strong);
+  border-radius: 6px;
+  background: var(--card-bg);
+  color: var(--ink);
+  font: inherit;
+}
+.pd-field textarea {
+  resize: vertical;
+}
+.pd-field [aria-invalid='true'] {
+  border-color: var(--tag-danger-fg);
+}
+.pd-emoji {
+  text-align: center;
+}
+.pd-swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding-top: 4px;
+}
+.pd-swatch {
+  position: relative;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  cursor: pointer;
+}
+.pd-swatch input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+/* The chosen swatch: a ring and a centre dot, so the choice doesn't rest on colour alone. */
+.pd-swatch:has(input:checked) {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+.pd-swatch:has(input:checked)::after {
+  content: '';
+  position: absolute;
+  inset: 8px;
+  border-radius: 50%;
+  background: #fff;
+}
+.pd-swatch:has(input:focus-visible) {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+.pd-error {
+  color: var(--tag-danger-fg);
+  font-size: 0.75rem;
+}
+.pd-hint {
+  margin: 0;
+  color: var(--ink-muted);
+  font-size: 0.75rem;
+}
+.pd-foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+.pd-archive {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-right: auto;
+}
+
+/* The project view (FR-UI-020): header, then Emails beside Tasks. */
+.project-page {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: var(--space-3);
+  height: 100%;
+  min-height: 0;
+}
+.project-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+.project-head h2 {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  font-size: 1.25rem;
+}
+.project-meta {
+  display: grid;
+  gap: 2px;
+  color: var(--ink-muted);
+  font-size: 0.8125rem;
+}
+.project-meta strong {
+  color: var(--ink);
+}
+.project-warn {
+  font-weight: 600;
+}
+.project-warn[data-tone='red'] {
+  color: var(--tag-danger-fg);
+}
+.project-warn[data-tone='amber'] {
+  color: var(--tag-warn-fg);
+}
+.project-head-tools {
+  display: flex;
+  gap: var(--space-2);
+  margin-left: auto;
+}
+.project-head-tools .ghost-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.project-archived {
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  background: var(--tag-muted-bg);
+  font-size: 0.75rem;
+}
+.project-sections {
+  display: grid;
+  grid-template-columns: minmax(280px, 2fr) minmax(0, 3fr);
+  gap: var(--space-3);
+  min-height: 0;
+}
+.project-side {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-height: 0;
+}
+.project-side > .project-section:first-child {
+  flex: 1;
+  overflow: auto;
+}
+.project-notes {
+  flex: none;
+  max-height: 45%;
+  overflow: auto;
+}
+.project-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-height: 0;
+}
+.project-section > h3 {
+  margin: 0;
+  font-size: 0.9375rem;
+}
+.project-ring-big {
+  flex: none;
+}
